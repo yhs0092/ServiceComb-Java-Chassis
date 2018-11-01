@@ -29,10 +29,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.ws.rs.core.Response.Status;
 
-import org.apache.servicecomb.swagger.invocation.exception.CommonExceptionData;
-import org.apache.servicecomb.swagger.invocation.exception.ExceptionFactory;
-import org.apache.servicecomb.swagger.invocation.exception.InvocationException;
-
 import io.netty.handler.codec.http.HttpHeaderValues;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
@@ -165,8 +161,7 @@ public class RestBodyHandler implements BodyHandler {
           // *** cse begin ***
           if (uploadsDir == null) {
             failed = true;
-            CommonExceptionData data = new CommonExceptionData("not support file upload.");
-            context.fail(ExceptionFactory.createProducerException(data));
+            context.fail(new IllegalArgumentException("not support file upload."));
             return;
           }
           // *** cse end ***
@@ -175,8 +170,7 @@ public class RestBodyHandler implements BodyHandler {
             long size = uploadSize + upload.size();
             if (size > bodyLimit) {
               failed = true;
-              context.fail(new InvocationException(Status.REQUEST_ENTITY_TOO_LARGE,
-                  Status.REQUEST_ENTITY_TOO_LARGE.getReasonPhrase()));
+              context.fail(Status.REQUEST_ENTITY_TOO_LARGE.getStatusCode());
               return;
             }
           }
@@ -220,8 +214,7 @@ public class RestBodyHandler implements BodyHandler {
       if (bodyLimit != -1 && uploadSize > bodyLimit) {
         failed = true;
         // enqueue a delete for the error uploads
-        context.fail(new InvocationException(Status.REQUEST_ENTITY_TOO_LARGE,
-            Status.REQUEST_ENTITY_TOO_LARGE.getReasonPhrase()));
+        context.fail(Status.REQUEST_ENTITY_TOO_LARGE.getStatusCode());
         context.vertx().runOnContext(v -> deleteFileUploads());
       } else {
         // multipart requests will not end up in the request body

@@ -22,6 +22,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response.Status;
 
 import org.apache.servicecomb.common.rest.codec.RestObjectMapperFactory;
 import org.apache.servicecomb.core.Const;
@@ -49,6 +50,7 @@ import org.springframework.http.HttpHeaders;
 
 import com.netflix.config.DynamicPropertyFactory;
 
+import io.vertx.codegen.annotations.Nullable;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
@@ -136,27 +138,39 @@ public class RestServerVerticle extends AbstractVerticle {
         SPIServiceUtils.getPriorityHighestService(GlobalRestFailureHandler.class);
     Handler<RoutingContext> failureHandler = null == globalRestFailureHandler ?
         ctx -> {
+          @Nullable Throwable failure = ctx.failure();
           if (ctx.response().closed()) {
             // response has been sent, do nothing
-            LOGGER.error("get a failure with closed response", ctx.failure());
+            LOGGER.error("get a failure with closed response", failure);
             ctx.next();
           }
           HttpServerResponse response = ctx.response();
-          if (ctx.failure() instanceof InvocationException) {
+          if (failure instanceof InvocationException) {
             // ServiceComb defined exception
-            InvocationException exception = (InvocationException) ctx.failure();
+            InvocationException exception = (InvocationException) failure;
             response.setStatusCode(exception.getStatusCode());
             response.setStatusMessage(exception.getErrorData().toString());
             response.end();
             return;
           }
 
-          LOGGER.error("unexpected failure happened", ctx.failure());
+          LOGGER.error("unexpected failure happened", failure);
+          int statusCode = 500;
+          String errorMessage = "unknown error";
           try {
-            // unknown exception
-            CommonExceptionData unknownError = new CommonExceptionData("unknown error");
-            ctx.response().setStatusCode(500).putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
-                .end(RestObjectMapperFactory.getRestObjectMapper().writeValueAsString(unknownError));
+            if (failure instanceof IllegalArgumentException
+                && "not support file upload.".equals(failure.getMessage())) {
+              statusCode = Status.BAD_REQUEST.getStatusCode();
+              errorMessage = "not support file upload.";
+            } else if (Status.REQUEST_ENTITY_TOO_LARGE.getStatusCode() == ctx.statusCode()) {
+              statusCode = Status.REQUEST_ENTITY_TOO_LARGE.getStatusCode();
+              errorMessage = Status.REQUEST_ENTITY_TOO_LARGE.getReasonPhrase();
+            }
+
+            // unknown exception, default scenario
+            CommonExceptionData errorData = new CommonExceptionData(errorMessage);
+            ctx.response().setStatusCode(statusCode).putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
+                .end(RestObjectMapperFactory.getRestObjectMapper().writeValueAsString(errorData));
           } catch (Exception e) {
             LOGGER.error("failed to send error response!", e);
           }
