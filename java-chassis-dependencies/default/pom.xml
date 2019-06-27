@@ -36,6 +36,7 @@
     <asciidoctorj.version>1.6.2</asciidoctorj.version>
     <aspectj.version>1.9.3</aspectj.version>
     <awaitility.version>3.0.0</awaitility.version>
+    <assertj.version>3.11.1</assertj.version>
     <brave.version>5.6.0</brave.version>
     <classmate.version>1.5.0</classmate.version>
     <commons-beanutils.version>1.9.3</commons-beanutils.version>
@@ -101,7 +102,8 @@
     <spectator.version>0.83.0</spectator.version>
     <spring.version>4.3.20.RELEASE</spring.version>
     <spring-boot.version>1.5.19.RELEASE</spring-boot.version>
-    <spring-cloud.version>Edgware.SR3</spring-cloud.version>     <!-- Spring Zuul handling of gzip response has bug in version Dalston.SR1 -->
+    <spring-cloud.version>Edgware.SR3
+    </spring-cloud.version>     <!-- Spring Zuul handling of gzip response has bug in version Dalston.SR1 -->
     <spring-data.version>2.0.9.RELEASE</spring-data.version>
     <stax2-api.version>4.2</stax2-api.version>
     <swagger.version>1.5.22</swagger.version>
@@ -809,6 +811,13 @@
         <groupId>org.awaitility</groupId>
         <artifactId>awaitility</artifactId>
         <version>${awaitility.version}</version>
+        <scope>test</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.assertj</groupId>
+        <artifactId>assertj-core</artifactId>
+        <version>${assertj.version}</version>
         <scope>test</scope>
       </dependency>
 
