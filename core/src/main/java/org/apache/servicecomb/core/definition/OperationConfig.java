@@ -22,6 +22,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.servicecomb.config.inject.InjectProperties;
 import org.apache.servicecomb.config.inject.InjectProperty;
+import org.apache.servicecomb.core.Const;
 
 @InjectProperties(prefix = "servicecomb")
 public class OperationConfig {
@@ -78,6 +79,12 @@ public class OperationConfig {
 
   private long nanoRestRequestWaitInPoolTimeout;
 
+  @InjectProperty(keys = {
+      "operation.${service}.transport", // Deprecated
+      "references.transport${op-priority}"
+  })
+  private String transport;
+
   public boolean isSlowInvocationEnabled() {
     return slowInvocationEnabled;
   }
@@ -131,5 +138,16 @@ public class OperationConfig {
 
   public long getNanoRestRequestWaitInPoolTimeout() {
     return nanoRestRequestWaitInPoolTimeout;
+  }
+
+  public String getTransport() {
+    return transport;
+  }
+
+  public void setTransport(String transport) {
+    if (transport == null) {
+      transport = Const.ANY_TRANSPORT;
+    }
+    this.transport = transport;
   }
 }
