@@ -115,6 +115,17 @@ public abstract class AbstractHandlerManager extends AbstractObjectManager<Strin
             defaultChainDef)
         .get();
     LOGGER.info("get handler chain for [{}]: [{}]", handlerChainKey, chainDef);
+//    if (null == chainDef) {
+//      LOGGER.error("null handler chain!!!");
+//      LOGGER.error("defaultChainDef: " + defaultChainDef);
+//      loadDefaultChainDef();
+//      LOGGER.error("reload defaultChainDef: " + defaultChainDef);
+//      String reloadChainKey = DynamicPropertyFactory.getInstance()
+//          .getStringProperty(handlerChainKey,
+//              defaultChainDef)
+//          .get();
+//      LOGGER.error("reload chainDef: " + reloadChainKey);
+//    }
     return createHandlerChain(chainDef);
   }
 }
