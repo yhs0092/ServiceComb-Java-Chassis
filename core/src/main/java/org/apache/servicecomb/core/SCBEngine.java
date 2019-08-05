@@ -75,7 +75,9 @@ public class SCBEngine {
 
   static final long DEFAULT_WAIT_UP_TIMEOUT = 10_000;
 
-  private static SCBEngine INSTANCE;
+  private static final Object initializationLock = new Object();
+
+  private volatile static SCBEngine INSTANCE;
 
   private ConsumerHandlerManager consumerHandlerManager = new ConsumerHandlerManager();
 
@@ -114,7 +116,7 @@ public class SCBEngine {
 
   private Thread shutdownHook;
 
-  public SCBEngine() {
+  protected SCBEngine() {
     serviceRegistry = RegistryUtils.getServiceRegistry();
     eventBus = serviceRegistry.getEventBus();
     eventBus.register(this);
@@ -142,6 +144,13 @@ public class SCBEngine {
   }
 
   public static SCBEngine getInstance() {
+    if (null == INSTANCE) {
+      synchronized (initializationLock) {
+        if (null == INSTANCE) {
+          new SCBEngine();
+        }
+      }
+    }
     return INSTANCE;
   }
 
