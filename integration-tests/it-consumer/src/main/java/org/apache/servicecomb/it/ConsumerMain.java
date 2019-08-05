@@ -47,6 +47,9 @@ import org.apache.servicecomb.it.testcase.TestTrace;
 import org.apache.servicecomb.it.testcase.TestTraceEdge;
 import org.apache.servicecomb.it.testcase.TestUpload;
 import org.apache.servicecomb.it.testcase.base.TestGeneric;
+import org.apache.servicecomb.it.testcase.objectparams.TestJAXRSObjectParamType;
+import org.apache.servicecomb.it.testcase.objectparams.TestRPCObjectParamType;
+import org.apache.servicecomb.it.testcase.objectparams.TestSpringMVCObjectParamType;
 import org.apache.servicecomb.it.testcase.thirdparty.Test3rdPartyInvocation;
 
 public class ConsumerMain {
@@ -131,6 +134,10 @@ public class ConsumerMain {
     ITJUnitUtils.runWithHighwayAndRest(TestAsyncInvoke.class);
 
     ITJUnitUtils.runWithHighwayAndRest(TestOptional.class);
+
+    ITJUnitUtils.runWithHighwayAndRest(TestSpringMVCObjectParamType.class);
+    ITJUnitUtils.runWithHighwayAndRest(TestJAXRSObjectParamType.class);
+    ITJUnitUtils.runWithHighwayAndRest(TestRPCObjectParamType.class);
   }
 
   interface ITTask {
