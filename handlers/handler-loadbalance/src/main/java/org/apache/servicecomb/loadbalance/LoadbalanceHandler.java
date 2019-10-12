@@ -70,6 +70,8 @@ public class LoadbalanceHandler implements Handler {
 
   public static final String SERVICECOMB_SERVER_ENDPOINT = "scb-endpoint";
 
+  // set endpoint in invocation.localContext
+  // ignore logic of loadBalance
   public static final boolean supportDefinedEndpoint =
       DynamicPropertyFactory.getInstance()
           .getBooleanProperty("servicecomb.loadbalance.userDefinedEndpoint.enabled", false).get();
@@ -104,7 +106,6 @@ public class LoadbalanceHandler implements Handler {
 
       return lastServer;
     }
-
 
     @Override
     public void markServerDown(Server server) {
@@ -232,7 +233,7 @@ public class LoadbalanceHandler implements Handler {
     loadBalancerMap.clear();
   }
 
-  private void send(Invocation invocation, AsyncResponse asyncResp, final LoadBalancer chosenLB) throws Exception {
+  private void send(Invocation invocation, AsyncResponse asyncResp, LoadBalancer chosenLB) throws Exception {
     long time = System.currentTimeMillis();
     ServiceCombServer server = chosenLB.chooseServer(invocation);
     if (null == server) {
@@ -256,13 +257,13 @@ public class LoadbalanceHandler implements Handler {
   }
 
   private void sendWithRetry(Invocation invocation, AsyncResponse asyncResp,
-      final LoadBalancer chosenLB) throws Exception {
+      LoadBalancer chosenLB) throws Exception {
     long time = System.currentTimeMillis();
     // retry in loadbalance, 2.0 feature
-    final int currentHandler = invocation.getHandlerIndex();
+    int currentHandler = invocation.getHandlerIndex();
 
-    final SyncResponseExecutor orginExecutor;
-    final Executor newExecutor;
+    SyncResponseExecutor orginExecutor;
+    Executor newExecutor;
     if (invocation.getResponseExecutor() instanceof SyncResponseExecutor) {
       orginExecutor = (SyncResponseExecutor) invocation.getResponseExecutor();
       newExecutor = new Executor() {

@@ -28,11 +28,11 @@ import java.util.concurrent.TimeUnit;
 
 import javax.xml.ws.Holder;
 
-import org.apache.servicecomb.core.CseContext;
 import org.apache.servicecomb.core.Invocation;
 import org.apache.servicecomb.core.NonSwaggerInvocation;
 import org.apache.servicecomb.core.SCBEngine;
 import org.apache.servicecomb.core.Transport;
+import org.apache.servicecomb.core.bootstrap.SCBBootstrap;
 import org.apache.servicecomb.core.definition.MicroserviceMeta;
 import org.apache.servicecomb.core.definition.OperationMeta;
 import org.apache.servicecomb.core.definition.SchemaMeta;
@@ -54,6 +54,7 @@ import org.apache.servicecomb.serviceregistry.discovery.DiscoveryTree;
 import org.apache.servicecomb.serviceregistry.discovery.DiscoveryTreeNode;
 import org.apache.servicecomb.swagger.invocation.AsyncResponse;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -67,12 +68,21 @@ import com.google.common.eventbus.Subscribe;
  *
  */
 public class TestLoadBalanceHandler2 {
+  static SCBEngine scbEngine = new SCBBootstrap().useLocalRegistry().createSCBEngineForTest();
+
   @BeforeClass
   public static void beforeClass() {
     //prepare for defineEndpointAndHandle
+    ArchaiusUtils.resetConfig();
     ArchaiusUtils.setProperty("servicecomb.loadbalance.userDefinedEndpoint.enabled", "true");
     // avoid mock
 
+  }
+
+  @AfterClass
+  public static void afterClass() {
+    scbEngine.destroy();
+    ArchaiusUtils.resetConfig();
   }
 
   @Before
@@ -83,7 +93,6 @@ public class TestLoadBalanceHandler2 {
 
   @After
   public void teardown() {
-    CseContext.getInstance().setTransportManager(null);
     ArchaiusUtils.resetConfig();
   }
 
@@ -150,7 +159,7 @@ public class TestLoadBalanceHandler2 {
 
     Map<String, MicroserviceInstance> data = new HashMap<>();
     DiscoveryTreeNode parent = new DiscoveryTreeNode().name("parent").data(data);
-    CseContext.getInstance().setTransportManager(transportManager);
+    scbEngine.setTransportManager(transportManager);
 
     RegistryUtils.setServiceRegistry(serviceRegistry);
 
@@ -263,7 +272,7 @@ public class TestLoadBalanceHandler2 {
 
     Map<String, MicroserviceInstance> data = new HashMap<>();
     DiscoveryTreeNode parent = new DiscoveryTreeNode().name("parent").data(data);
-    CseContext.getInstance().setTransportManager(transportManager);
+    scbEngine.setTransportManager(transportManager);
 
     RegistryUtils.setServiceRegistry(serviceRegistry);
 
@@ -380,7 +389,7 @@ public class TestLoadBalanceHandler2 {
 
     Map<String, MicroserviceInstance> data = new HashMap<>();
     DiscoveryTreeNode parent = new DiscoveryTreeNode().name("parent").data(data);
-    CseContext.getInstance().setTransportManager(transportManager);
+    scbEngine.setTransportManager(transportManager);
 
     RegistryUtils.setServiceRegistry(serviceRegistry);
 
@@ -507,7 +516,7 @@ public class TestLoadBalanceHandler2 {
 
     Map<String, MicroserviceInstance> data = new HashMap<>();
     DiscoveryTreeNode parent = new DiscoveryTreeNode().name("parent").data(data);
-    CseContext.getInstance().setTransportManager(transportManager);
+    scbEngine.setTransportManager(transportManager);
 
     RegistryUtils.setServiceRegistry(serviceRegistry);
 
@@ -651,7 +660,7 @@ public class TestLoadBalanceHandler2 {
 
     Map<String, MicroserviceInstance> data = new HashMap<>();
     DiscoveryTreeNode parent = new DiscoveryTreeNode().name("parent").data(data);
-    CseContext.getInstance().setTransportManager(transportManager);
+    scbEngine.setTransportManager(transportManager);
 
     RegistryUtils.setServiceRegistry(serviceRegistry);
 
@@ -769,7 +778,7 @@ public class TestLoadBalanceHandler2 {
 
     Map<String, MicroserviceInstance> data = new HashMap<>();
     DiscoveryTreeNode parent = new DiscoveryTreeNode().name("parent").data(data);
-    CseContext.getInstance().setTransportManager(transportManager);
+    scbEngine.setTransportManager(transportManager);
     SCBEngine.getInstance().setTransportManager(transportManager);
 
     RegistryUtils.setServiceRegistry(serviceRegistry);
