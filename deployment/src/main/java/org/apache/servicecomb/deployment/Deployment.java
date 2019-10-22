@@ -26,8 +26,9 @@ public class Deployment {
 
   public static SystemBootstrapInfo getSystemBootStrapInfo(String systemKey) {
     for (DeploymentProvider provider : providerList) {
-      if (provider.getSystemBootStrapInfo(systemKey) != null) {
-        return provider.getSystemBootStrapInfo(systemKey);
+      SystemBootstrapInfo systemBootStrapInfo = provider.getSystemBootStrapInfo(systemKey);
+      if (systemBootStrapInfo != null) {
+        return systemBootStrapInfo;
       }
     }
     return null;

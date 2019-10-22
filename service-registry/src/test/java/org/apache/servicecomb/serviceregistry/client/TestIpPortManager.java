@@ -18,6 +18,7 @@
 package org.apache.servicecomb.serviceregistry.client;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,16 +49,12 @@ public class TestIpPortManager {
 
   AbstractServiceRegistry serviceRegistry;
 
-  IpPortManager manager;
-
   @Before
   public void setup() {
     ConfigUtil.createLocalConfig();
     serviceRegistry = (AbstractServiceRegistry) ServiceRegistryFactory.createLocal();
     serviceRegistry.setServiceRegistryClient(srClient);
     serviceRegistry.init();
-
-    manager = serviceRegistry.getIpPortManager();
   }
 
   @Test
@@ -71,7 +68,7 @@ public class TestIpPortManager {
     new Expectations() {
       {
         config.getIpPort();
-        result = ipPortList;
+        result = Collections.singletonList(ipPortList);
         config.getTransport();
         result = "rest";
         config.isRegistryAutoDiscovery();
@@ -79,7 +76,7 @@ public class TestIpPortManager {
       }
     };
 
-    IpPortManager manager = new IpPortManager(config, cacheManager);
+    IpPortManager manager = new IpPortManager(config, cacheManager, config.getIpPort().get(0));
     IpPort address1 = manager.getAvailableAddress();
 
     if (address1.getPort() == 9980) {
@@ -147,6 +144,7 @@ public class TestIpPortManager {
       Assert.assertEquals(9982, address6.getPort());
     }
   }
+
   @Test
   public void testCreateServiceRegistryCacheWithInstanceCache() {
 

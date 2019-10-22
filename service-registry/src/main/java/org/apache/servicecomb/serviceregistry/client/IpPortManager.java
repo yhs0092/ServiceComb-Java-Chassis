@@ -20,7 +20,6 @@ package org.apache.servicecomb.serviceregistry.client;
 import static org.apache.servicecomb.serviceregistry.api.Const.REGISTRY_APP_ID;
 import static org.apache.servicecomb.serviceregistry.api.Const.REGISTRY_SERVICE_NAME;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -44,14 +43,13 @@ public class IpPortManager {
 
   private String defaultTransport = "rest";
 
-  private ArrayList<IpPort> defaultIpPort;
+  private List<IpPort> defaultIpPort;
 
   private AtomicInteger currentAvailableIndex;
 
   private boolean autoDiscoveryInited = false;
 
   private int maxRetryTimes;
-
 
   public void setAutoDiscoveryInited(boolean autoDiscoveryInited) {
     this.autoDiscoveryInited = autoDiscoveryInited;
@@ -61,18 +59,19 @@ public class IpPortManager {
     return maxRetryTimes;
   }
 
-  public IpPortManager(ServiceRegistryConfig serviceRegistryConfig, InstanceCacheManager instanceCacheManager) {
+  public IpPortManager(ServiceRegistryConfig serviceRegistryConfig, InstanceCacheManager instanceCacheManager,
+      List<IpPort> defaultIpPort) {
     this.serviceRegistryConfig = serviceRegistryConfig;
     this.instanceCacheManager = instanceCacheManager;
 
     defaultTransport = serviceRegistryConfig.getTransport();
-    defaultIpPort = serviceRegistryConfig.getIpPort();
-    if (defaultIpPort.size() == 0) {
+    this.defaultIpPort = defaultIpPort;
+    if (this.defaultIpPort.size() == 0) {
       throw new IllegalArgumentException("Service center address is required to start the application.");
     }
-    int initialIndex = new Random().nextInt(defaultIpPort.size());
+    int initialIndex = new Random().nextInt(this.defaultIpPort.size());
     currentAvailableIndex = new AtomicInteger(initialIndex);
-    maxRetryTimes = defaultIpPort.size();
+    maxRetryTimes = this.defaultIpPort.size();
   }
 
   // we have to do this operation after the first time setup has already done

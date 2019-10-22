@@ -69,11 +69,14 @@ public class LocalServiceRegistryClientImpl implements ServiceRegistryClient {
 
   private AtomicInteger revision = new AtomicInteger(0);
 
-  public LocalServiceRegistryClientImpl() {
+  private IpPortManager ipPortManager;
+
+  public LocalServiceRegistryClientImpl(IpPortManager ipPortManager) {
     if (StringUtils.isEmpty(LOCAL_REGISTRY_FILE)) {
       LOGGER.info("create empty local registry.");
       return;
     }
+    this.ipPortManager = ipPortManager;
 
     InputStream is = this.getClass().getClassLoader().getResourceAsStream(LOCAL_REGISTRY_FILE);
     if (is == null) {
@@ -428,5 +431,10 @@ public class LocalServiceRegistryClientImpl implements ServiceRegistryClient {
     info.setApiVersion("4.0.0");
     info.setConfig(new ServiceCenterConfig());
     return info;
+  }
+
+  @Override
+  public IpPortManager getIpPortManager() {
+    return ipPortManager;
   }
 }

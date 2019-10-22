@@ -16,6 +16,7 @@
  */
 package org.apache.servicecomb.serviceregistry.registry;
 
+import org.apache.servicecomb.serviceregistry.client.IpPortManager;
 import org.apache.servicecomb.serviceregistry.client.LocalServiceRegistryClientImpl;
 import org.apache.servicecomb.serviceregistry.client.ServiceRegistryClient;
 import org.apache.servicecomb.serviceregistry.config.ServiceRegistryConfig;
@@ -29,7 +30,7 @@ public class LocalServiceRegistry extends AbstractServiceRegistry {
     super(eventBus, serviceRegistryConfig, microserviceDefinition);
   }
 
-  protected ServiceRegistryClient createServiceRegistryClient() {
-    return new LocalServiceRegistryClientImpl();
+  protected ServiceRegistryClient createServiceRegistryClient(IpPortManager ipPortManager) {
+    return new LocalServiceRegistryClientImpl(ipPortManager);
   }
 }

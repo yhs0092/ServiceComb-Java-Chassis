@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.servicecomb.foundation.common.net.IpPort;
 import org.apache.servicecomb.serviceregistry.Features;
 import org.apache.servicecomb.serviceregistry.RegistryUtils;
 import org.apache.servicecomb.serviceregistry.ServiceRegistry;
@@ -98,14 +99,20 @@ public abstract class AbstractServiceRegistry implements ServiceRegistry {
 
     initCacheManager();
 
-    ipPortManager = new IpPortManager(serviceRegistryConfig, instanceCacheManager);
-    if (srClient == null) {
-      srClient = createServiceRegistryClient();
+    for (List<IpPort> ipPorts : serviceRegistryConfig.getIpPort()) {
+      initServiceCenterCluster(ipPorts);
     }
 
-    createServiceCenterTask();
-
     eventBus.register(this);
+  }
+
+  private void initServiceCenterCluster(List<IpPort> defaultIpPort) {
+    IpPortManager ipPortManager = new IpPortManager(serviceRegistryConfig, instanceCacheManager, defaultIpPort);
+    if (srClient == null) {
+      srClient = createServiceRegistryClient(ipPortManager);
+    }
+
+    createServiceCenterTask(srClient);
   }
 
   protected void initAppManager() throws InstantiationException, IllegalAccessException, ClassNotFoundException {
@@ -166,7 +173,7 @@ public abstract class AbstractServiceRegistry implements ServiceRegistry {
     return instanceCacheManager;
   }
 
-  protected abstract ServiceRegistryClient createServiceRegistryClient();
+  protected abstract ServiceRegistryClient createServiceRegistryClient(IpPortManager ipPortManager);
 
   @Override
   public void run() {
@@ -197,7 +204,7 @@ public abstract class AbstractServiceRegistry implements ServiceRegistry {
     }
   }
 
-  private void createServiceCenterTask() {
+  private void createServiceCenterTask(ServiceRegistryClient srClient) {
     MicroserviceServiceCenterTask task =
         new MicroserviceServiceCenterTask(eventBus, serviceRegistryConfig, srClient, microservice);
     serviceCenterTask = new ServiceCenterTask(eventBus, serviceRegistryConfig.getHeartbeatInterval(),

@@ -77,7 +77,9 @@ public final class ServiceRegistryClientImpl implements ServiceRegistryClient {
   private static final Logger LOGGER = LoggerFactory.getLogger(ServiceRegistryClientImpl.class);
 
   private static final String ERROR_CODE = "errorCode";
+
   private static final String ERR_SERVICE_NOT_EXISTS = "400012";
+
   private static final String ERR_SCHEMA_NOT_EXISTS = "400016";
 
   private IpPortManager ipPortManager;
@@ -900,5 +902,10 @@ public final class ServiceRegistryClientImpl implements ServiceRegistryClient {
       LOGGER.error("query servicecenter version info failed.", e);
     }
     return null;
+  }
+
+  @Override
+  public IpPortManager getIpPortManager() {
+    return ipPortManager;
   }
 }

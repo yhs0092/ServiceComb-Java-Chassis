@@ -21,6 +21,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.servicecomb.foundation.common.utils.SPIServiceUtils;
+import org.apache.servicecomb.serviceregistry.client.IpPortManager;
 import org.apache.servicecomb.serviceregistry.client.ServiceRegistryClient;
 import org.apache.servicecomb.serviceregistry.client.http.ServiceRegistryClientImpl;
 import org.apache.servicecomb.serviceregistry.config.ServiceRegistryConfig;
@@ -71,7 +72,7 @@ public class RemoteServiceRegistry extends AbstractServiceRegistry {
   }
 
   @Override
-  protected ServiceRegistryClient createServiceRegistryClient() {
+  protected ServiceRegistryClient createServiceRegistryClient(IpPortManager ipPortManager) {
     return new ServiceRegistryClientImpl(ipPortManager);
   }
 

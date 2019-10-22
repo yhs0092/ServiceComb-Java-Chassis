@@ -22,7 +22,8 @@ import static org.apache.servicecomb.serviceregistry.definition.DefinitionConst.
 import static org.apache.servicecomb.serviceregistry.definition.DefinitionConst.DEFAULT_MICROSERVICE_VERSION;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -35,6 +36,7 @@ import org.apache.servicecomb.foundation.common.utils.SPIServiceUtils;
 import org.apache.servicecomb.serviceregistry.RegistryUtils;
 import org.apache.servicecomb.serviceregistry.ServiceRegistry;
 import org.apache.servicecomb.serviceregistry.api.registry.MicroserviceInstanceStatus;
+import org.apache.servicecomb.serviceregistry.client.IpPortManager;
 import org.apache.servicecomb.serviceregistry.client.LocalServiceRegistryClientImpl;
 import org.apache.servicecomb.serviceregistry.client.ServiceRegistryClient;
 import org.apache.servicecomb.serviceregistry.config.ServiceRegistryConfig;
@@ -65,8 +67,8 @@ public class TestRemoteServiceRegistry {
     }
 
     @Override
-    protected ServiceRegistryClient createServiceRegistryClient() {
-      return new LocalServiceRegistryClientImpl();
+    protected ServiceRegistryClient createServiceRegistryClient(IpPortManager ipPortManager) {
+      return new LocalServiceRegistryClientImpl(ipPortManager);
     }
   }
 
@@ -79,6 +81,8 @@ public class TestRemoteServiceRegistry {
     ArrayList<IpPort> ipPortList = new ArrayList<>();
     ipPortList.add(new IpPort("127.0.0.1", 9980));
     ipPortList.add(new IpPort("127.0.0.1", 9981));
+    final List<List<IpPort>> scClusterList = new ArrayList<>();
+    scClusterList.add(ipPortList);
 
     CountDownLatch latch = new CountDownLatch(1);
     ServiceRegistryTaskInitializer initializer = new MockUp<ServiceRegistryTaskInitializer>() {
@@ -93,7 +97,7 @@ public class TestRemoteServiceRegistry {
         definition.getConfiguration();
         result = ConfigUtil.createLocalConfig();
         config.getIpPort();
-        result = ipPortList;
+        result = scClusterList;
         config.getTransport();
         result = "rest";
         config.isRegistryAutoDiscovery();
@@ -105,7 +109,7 @@ public class TestRemoteServiceRegistry {
         config.isWatch();
         result = false;
         SPIServiceUtils.getOrLoadSortedService(ServiceRegistryTaskInitializer.class);
-        result = Arrays.asList(initializer);
+        result = Collections.singletonList(initializer);
       }
     };
 

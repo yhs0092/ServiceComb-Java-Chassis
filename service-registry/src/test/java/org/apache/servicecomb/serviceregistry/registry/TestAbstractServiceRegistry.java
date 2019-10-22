@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.apache.servicecomb.serviceregistry.RegistryUtils;
 import org.apache.servicecomb.serviceregistry.api.registry.MicroserviceInstance;
+import org.apache.servicecomb.serviceregistry.client.IpPortManager;
 import org.apache.servicecomb.serviceregistry.client.ServiceRegistryClient;
 import org.apache.servicecomb.serviceregistry.config.ServiceRegistryConfig;
 import org.apache.servicecomb.serviceregistry.consumer.AppManager;
@@ -57,7 +58,7 @@ public class TestAbstractServiceRegistry {
     }
 
     @Override
-    protected ServiceRegistryClient createServiceRegistryClient() {
+    protected ServiceRegistryClient createServiceRegistryClient(IpPortManager ipPortManager) {
       return null;
     }
   }

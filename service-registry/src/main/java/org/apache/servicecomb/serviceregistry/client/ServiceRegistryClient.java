@@ -172,4 +172,9 @@ public interface ServiceRegistryClient {
    * get ServiceCenterVersionInfo
    */
   ServiceCenterInfo getServiceCenterInfo();
+
+  /**
+   * @return the {@link IpPortManager} used by this client
+   */
+  IpPortManager getIpPortManager();
 }

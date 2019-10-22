@@ -21,8 +21,10 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.servicecomb.deployment.CompositeSystemBootstrapInfo;
 import org.apache.servicecomb.deployment.Deployment;
 import org.apache.servicecomb.deployment.DeploymentProvider;
+import org.apache.servicecomb.deployment.SystemBootstrapInfo;
 import org.apache.servicecomb.foundation.common.net.IpPort;
 import org.apache.servicecomb.foundation.common.net.NetUtils;
 import org.slf4j.Logger;
@@ -136,14 +138,26 @@ public final class ServiceRegistryConfig {
     return deployInstances;
   }
 
-
   public boolean isSsl() {
     getIpPort();
     return this.ssl;
   }
 
-  public ArrayList<IpPort> getIpPort() {
-    List<String> uriList = Deployment.getSystemBootStrapInfo(DeploymentProvider.SYSTEM_KEY_SERVICE_CENTER)
+  public List<List<IpPort>> getIpPort() {
+    SystemBootstrapInfo systemBootStrapInfo =
+        Deployment.getSystemBootStrapInfo(DeploymentProvider.SYSTEM_KEY_SERVICE_CENTER);
+    List<List<IpPort>> uriClusterList = new ArrayList<>();
+    if (systemBootStrapInfo instanceof CompositeSystemBootstrapInfo) {
+      ((CompositeSystemBootstrapInfo) systemBootStrapInfo).getSystemBootstrapInfos()
+          .forEach(bootstrapInfo -> parseSingleBootstrapInfo(systemBootStrapInfo, uriClusterList));
+    } else {
+      parseSingleBootstrapInfo(systemBootStrapInfo, uriClusterList);
+    }
+    return uriClusterList;
+  }
+
+  private void parseSingleBootstrapInfo(SystemBootstrapInfo systemBootStrapInfo, List<List<IpPort>> uriClusterList) {
+    List<String> uriList = systemBootStrapInfo
         .getAccessURL();
     ArrayList<IpPort> ipPortList = new ArrayList<>();
     uriList.forEach(anUriList -> {
@@ -155,7 +169,7 @@ public final class ServiceRegistryConfig {
         LOGGER.error("servicecomb.service.registry.address invalid : {}", anUriList, e);
       }
     });
-    return ipPortList;
+    uriClusterList.add(ipPortList);
   }
 
   public String getTransport() {

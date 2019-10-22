@@ -157,7 +157,8 @@ public class TestClientHttp {
 
   @Test
   public void testIpPortManager(@Mocked InstanceCacheManager instanceCacheManager) throws Exception {
-    IpPortManager oManager = new IpPortManager(ServiceRegistryConfig.INSTANCE, instanceCacheManager);
+    IpPortManager oManager = new IpPortManager(ServiceRegistryConfig.INSTANCE, instanceCacheManager,
+        ServiceRegistryConfig.INSTANCE.getIpPort().get(0));
     IpPort oIPPort = oManager.getNextAvailableAddress(new IpPort("", 33));
     Assert.assertEquals(oIPPort.getHostOrIp(), oManager.getAvailableAddress().getHostOrIp());
   }

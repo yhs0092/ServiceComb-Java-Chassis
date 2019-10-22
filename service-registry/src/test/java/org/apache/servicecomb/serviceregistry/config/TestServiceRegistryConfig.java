@@ -63,7 +63,9 @@ public class TestServiceRegistryConfig {
     Assert.assertEquals(ServiceRegistryConfig.NO_TENANT, oConfig.getTenantName());
     Assert.assertNull(oConfig.getSecretKey());
     Assert.assertNull(ServiceRegistryConfig.INSTANCE.getMicroserviceVersionFactory());
-    List<IpPort> ipPorts = oConfig.getIpPort();
+    List<List<IpPort>> uriClusterList = oConfig.getIpPort();
+    Assert.assertEquals(1, uriClusterList.size());
+    List<IpPort> ipPorts = uriClusterList.get(0);
     Assert.assertEquals("127.0.0.1:80", ipPorts.get(0).toString());
     Assert.assertEquals("127.0.0.1:443", ipPorts.get(1).toString());
     Assert.assertFalse(ServiceRegistryConfig.INSTANCE.isProxyEnable());

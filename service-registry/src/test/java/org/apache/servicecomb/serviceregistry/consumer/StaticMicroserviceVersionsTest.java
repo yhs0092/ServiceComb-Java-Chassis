@@ -23,6 +23,7 @@ import org.apache.servicecomb.serviceregistry.RegistryUtils;
 import org.apache.servicecomb.serviceregistry.api.registry.Microservice;
 import org.apache.servicecomb.serviceregistry.api.registry.MicroserviceInstance;
 import org.apache.servicecomb.serviceregistry.api.registry.StaticMicroservice;
+import org.apache.servicecomb.serviceregistry.client.IpPortManager;
 import org.apache.servicecomb.serviceregistry.client.ServiceRegistryClient;
 import org.apache.servicecomb.serviceregistry.definition.MicroserviceDefinition;
 import org.apache.servicecomb.serviceregistry.registry.AbstractServiceRegistry;
@@ -50,7 +51,7 @@ public class StaticMicroserviceVersionsTest {
     RegistryUtils.setServiceRegistry(new AbstractServiceRegistry(null, null,
         MicroserviceDefinition.create(APP_ID, THIS_SERVICE)) {
       @Override
-      protected ServiceRegistryClient createServiceRegistryClient() {
+      protected ServiceRegistryClient createServiceRegistryClient(IpPortManager ipPortManager) {
         return null;
       }
     });
