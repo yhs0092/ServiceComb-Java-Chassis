@@ -18,6 +18,7 @@ package org.apache.servicecomb.serviceregistry.task;
 
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.apache.servicecomb.serviceregistry.client.ServiceRegistryClient;
 import org.apache.servicecomb.serviceregistry.task.event.ExceptionEvent;
 import org.apache.servicecomb.serviceregistry.task.event.SafeModeChangeEvent;
 import org.slf4j.Logger;
@@ -48,12 +49,15 @@ public class ServiceCenterTask implements Runnable {
 
   private ServiceCenterTaskMonitor serviceCenterTaskMonitor = new ServiceCenterTaskMonitor();
 
+  private ServiceRegistryClient srClient;
+
   public ServiceCenterTask(EventBus eventBus, int interval, int checkTimes,
-      MicroserviceServiceCenterTask microserviceServiceCenterTask) {
+      MicroserviceServiceCenterTask microserviceServiceCenterTask, ServiceRegistryClient srClient) {
     this.eventBus = eventBus;
     this.interval = interval;
     this.checkTimes = checkTimes;
     this.microserviceServiceCenterTask = microserviceServiceCenterTask;
+    this.srClient = srClient;
 
     this.eventBus.register(this);
   }

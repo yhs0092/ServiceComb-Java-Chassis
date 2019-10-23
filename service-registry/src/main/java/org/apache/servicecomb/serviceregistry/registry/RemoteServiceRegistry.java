@@ -28,6 +28,7 @@ import org.apache.servicecomb.serviceregistry.config.ServiceRegistryConfig;
 import org.apache.servicecomb.serviceregistry.definition.MicroserviceDefinition;
 import org.apache.servicecomb.serviceregistry.task.HeartbeatResult;
 import org.apache.servicecomb.serviceregistry.task.MicroserviceInstanceHeartbeatTask;
+import org.apache.servicecomb.serviceregistry.task.ServiceCenterTask;
 import org.apache.servicecomb.serviceregistry.task.event.PeriodicPullEvent;
 import org.apache.servicecomb.serviceregistry.task.event.PullMicroserviceVersionsInstancesEvent;
 import org.apache.servicecomb.serviceregistry.task.event.ShutdownEvent;
@@ -86,10 +87,12 @@ public class RemoteServiceRegistry extends AbstractServiceRegistry {
   public void run() {
     super.run();
 
-    taskPool.scheduleAtFixedRate(serviceCenterTask,
-        serviceRegistryConfig.getHeartbeatInterval(),
-        serviceRegistryConfig.getHeartbeatInterval(),
-        TimeUnit.SECONDS);
+    for (ServiceCenterTask serviceCenterTask : serviceCenterTasks) {
+      taskPool.scheduleAtFixedRate(serviceCenterTask,
+          serviceRegistryConfig.getHeartbeatInterval(),
+          serviceRegistryConfig.getHeartbeatInterval(),
+          TimeUnit.SECONDS);
+    }
 
     taskPool.scheduleAtFixedRate(
         () -> eventBus.post(new PeriodicPullEvent()),

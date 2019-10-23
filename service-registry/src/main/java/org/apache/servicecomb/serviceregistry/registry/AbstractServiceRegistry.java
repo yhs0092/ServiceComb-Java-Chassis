@@ -79,7 +79,7 @@ public abstract class AbstractServiceRegistry implements ServiceRegistry {
 
   protected ServiceRegistryConfig serviceRegistryConfig;
 
-  protected ServiceCenterTask serviceCenterTask;
+  protected List<ServiceCenterTask> serviceCenterTasks = new ArrayList<>(1);
 
   public AbstractServiceRegistry(EventBus eventBus, ServiceRegistryConfig serviceRegistryConfig,
       MicroserviceDefinition microserviceDefinition) {
@@ -100,19 +100,25 @@ public abstract class AbstractServiceRegistry implements ServiceRegistry {
     initCacheManager();
 
     for (List<IpPort> ipPorts : serviceRegistryConfig.getIpPort()) {
-      initServiceCenterCluster(ipPorts);
+      initServiceCenterClusterTask(ipPorts);
     }
 
     eventBus.register(this);
   }
 
-  private void initServiceCenterCluster(List<IpPort> defaultIpPort) {
+  /**
+   * <ol>
+   * <li>Construct the {@link ServiceRegistryClient} from the service-center addresses specified by {@code defaultIpPort}.</li>
+   * <li>Create the service registry related tasks, including microservice-registry, instance-registry, heart-beat, watch-task</li>
+   * </ol>
+   *
+   * @param defaultIpPort the address list of a service-center cluster
+   */
+  private void initServiceCenterClusterTask(List<IpPort> defaultIpPort) {
     IpPortManager ipPortManager = new IpPortManager(serviceRegistryConfig, instanceCacheManager, defaultIpPort);
-    if (srClient == null) {
-      srClient = createServiceRegistryClient(ipPortManager);
-    }
+    ServiceRegistryClient srClient = createServiceRegistryClient(ipPortManager);
 
-    createServiceCenterTask(srClient);
+    serviceCenterTasks.add(createServiceCenterTask(srClient));
   }
 
   protected void initAppManager() throws InstantiationException, IllegalAccessException, ClassNotFoundException {
@@ -182,7 +188,9 @@ public abstract class AbstractServiceRegistry implements ServiceRegistry {
     loadFrameworkVersions();
     // try register
     // if failed, then retry in thread
-    serviceCenterTask.init();
+    for (ServiceCenterTask serviceCenterTask : serviceCenterTasks) {
+      serviceCenterTask.init();
+    }
   }
 
   private void loadFrameworkVersions() {
@@ -204,11 +212,15 @@ public abstract class AbstractServiceRegistry implements ServiceRegistry {
     }
   }
 
-  private void createServiceCenterTask(ServiceRegistryClient srClient) {
+  private ServiceCenterTask createServiceCenterTask(ServiceRegistryClient srClient) {
     MicroserviceServiceCenterTask task =
         new MicroserviceServiceCenterTask(eventBus, serviceRegistryConfig, srClient, microservice);
-    serviceCenterTask = new ServiceCenterTask(eventBus, serviceRegistryConfig.getHeartbeatInterval(),
-        serviceRegistryConfig.getResendHeartBeatTimes(), task);
+    return new ServiceCenterTask(
+        eventBus,
+        serviceRegistryConfig.getHeartbeatInterval(),
+        serviceRegistryConfig.getResendHeartBeatTimes(),
+        task,
+        srClient);
   }
 
   public boolean unregisterInstance() {

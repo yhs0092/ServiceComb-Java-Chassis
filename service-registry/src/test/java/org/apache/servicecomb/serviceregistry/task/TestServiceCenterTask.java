@@ -58,7 +58,7 @@ public class TestServiceCenterTask {
   public void init() {
     serviceCenterTask =
         new ServiceCenterTask(eventBus, ServiceRegistryConfig.INSTANCE.getHeartbeatInterval(), 3,
-            microserviceServiceCenterTask);
+            microserviceServiceCenterTask, null);
   }
 
   @Test
