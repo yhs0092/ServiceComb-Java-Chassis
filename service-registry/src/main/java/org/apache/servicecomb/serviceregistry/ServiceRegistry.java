@@ -28,6 +28,8 @@ import org.apache.servicecomb.serviceregistry.client.http.MicroserviceInstances;
 import org.apache.servicecomb.serviceregistry.consumer.AppManager;
 
 public interface ServiceRegistry {
+  String name();
+
   void init();
 
   void run();

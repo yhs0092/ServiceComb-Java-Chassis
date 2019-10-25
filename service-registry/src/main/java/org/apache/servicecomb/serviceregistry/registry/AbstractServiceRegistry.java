@@ -58,6 +58,10 @@ import com.google.common.eventbus.EventBus;
 public abstract class AbstractServiceRegistry implements ServiceRegistry {
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractServiceRegistry.class);
 
+  public static final String DEFAULT_SERVICE_REGISTRY = "DEFAULT-SERVICE-REGISTRY";
+
+  private String name;
+
   private Features features = new Features();
 
   private MicroserviceFactory microserviceFactory = new MicroserviceFactory();
@@ -86,6 +90,13 @@ public abstract class AbstractServiceRegistry implements ServiceRegistry {
     this.serviceRegistryConfig = serviceRegistryConfig;
     this.microserviceDefinition = microserviceDefinition;
     this.microservice = microserviceFactory.create(microserviceDefinition);
+    this.name = DEFAULT_SERVICE_REGISTRY;
+  }
+
+  public AbstractServiceRegistry(EventBus eventBus, ServiceRegistryConfig serviceRegistryConfig,
+      MicroserviceDefinition microserviceDefinition, String name) {
+    this(eventBus, serviceRegistryConfig, microserviceDefinition);
+    this.name = name;
   }
 
   @Override
@@ -343,5 +354,10 @@ public abstract class AbstractServiceRegistry implements ServiceRegistry {
     }
 
     registerMicroserviceMapping(microserviceName, version, microserviceInstances, schemaIntfCls);
+  }
+
+  @Override
+  public String name() {
+    return name;
   }
 }

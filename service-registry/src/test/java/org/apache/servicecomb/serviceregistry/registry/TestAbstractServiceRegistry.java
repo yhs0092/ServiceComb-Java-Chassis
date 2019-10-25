@@ -105,6 +105,7 @@ public class TestAbstractServiceRegistry {
 
     Assert.assertThat(registry.appManager.getMicroserviceVersionFactory(),
         Matchers.instanceOf(DefaultMicroserviceVersionFactory.class));
+    Assert.assertEquals(AbstractServiceRegistry.DEFAULT_SERVICE_REGISTRY, registry.name());
   }
 
   @Test
