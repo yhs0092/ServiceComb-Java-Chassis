@@ -39,7 +39,20 @@ import com.google.common.eventbus.Subscribe;
 public class RemoteServiceRegistry extends AbstractServiceRegistry {
   private static final Logger LOGGER = LoggerFactory.getLogger(RemoteServiceRegistry.class);
 
-  private ScheduledThreadPoolExecutor taskPool;
+  private static ScheduledThreadPoolExecutor taskPool = new ScheduledThreadPoolExecutor(3,
+      task -> new Thread(task) {
+        @Override
+        public void run() {
+          try {
+            setName("Service Center Task [" + task.toString() + "[" + this.getId() + "]]");
+            super.run();
+          } catch (Throwable e) {
+            LOGGER.error("task {} execute error.", getName(), e);
+          }
+        }
+      },
+      (task, executor) -> LOGGER.warn("Too many pending tasks, reject " + task.toString())
+  );
 
   private List<ServiceRegistryTaskInitializer> taskInitializers = SPIServiceUtils
       .getOrLoadSortedService(ServiceRegistryTaskInitializer.class);
@@ -52,22 +65,6 @@ public class RemoteServiceRegistry extends AbstractServiceRegistry {
   @Override
   public void init() {
     super.init();
-    taskPool = new ScheduledThreadPoolExecutor(3,
-        task -> {
-          return new Thread(task) {
-            @Override
-            public void run() {
-              try {
-                setName("Service Center Task [" + task.toString() + "[" + this.getId() + "]]");
-                super.run();
-              } catch (Throwable e) {
-                LOGGER.error("task {} execute error.", getName(), e);
-              }
-            }
-          };
-        },
-        (task, executor) -> LOGGER.warn("Too many pending tasks, reject " + task.toString())
-    );
   }
 
   @Override
@@ -78,19 +75,19 @@ public class RemoteServiceRegistry extends AbstractServiceRegistry {
   @Subscribe
   public void onShutdown(ShutdownEvent event) {
     LOGGER.info("service center task is shutdown.");
-    taskPool.shutdownNow();
+    getTaskPool().shutdownNow();
   }
 
   @Override
   public void run() {
     super.run();
 
-    taskPool.scheduleAtFixedRate(serviceCenterTask,
+    getTaskPool().scheduleAtFixedRate(serviceCenterTask,
         serviceRegistryConfig.getHeartbeatInterval(),
         serviceRegistryConfig.getHeartbeatInterval(),
         TimeUnit.SECONDS);
 
-    taskPool.scheduleAtFixedRate(
+    getTaskPool().scheduleAtFixedRate(
         () -> eventBus.post(new PeriodicPullEvent()),
         serviceRegistryConfig.getInstancePullInterval(),
         serviceRegistryConfig.getInstancePullInterval(),
@@ -103,7 +100,7 @@ public class RemoteServiceRegistry extends AbstractServiceRegistry {
 
   @Subscribe
   public void onPullMicroserviceVersionsInstancesEvent(PullMicroserviceVersionsInstancesEvent event) {
-    taskPool.schedule(event.getMicroserviceVersions()::pullInstances, event.getMsDelay(), TimeUnit.MILLISECONDS);
+    getTaskPool().schedule(event.getMicroserviceVersions()::pullInstances, event.getMsDelay(), TimeUnit.MILLISECONDS);
   }
 
   @Subscribe
@@ -114,6 +111,6 @@ public class RemoteServiceRegistry extends AbstractServiceRegistry {
   }
 
   public ScheduledThreadPoolExecutor getTaskPool() {
-    return this.taskPool;
+    return taskPool;
   }
 }

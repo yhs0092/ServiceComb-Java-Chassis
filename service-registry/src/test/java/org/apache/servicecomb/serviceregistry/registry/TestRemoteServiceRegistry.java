@@ -22,7 +22,7 @@ import static org.apache.servicecomb.serviceregistry.definition.DefinitionConst.
 import static org.apache.servicecomb.serviceregistry.definition.DefinitionConst.DEFAULT_MICROSERVICE_VERSION;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -50,7 +50,6 @@ import org.junit.rules.ExpectedException;
 
 import com.google.common.eventbus.EventBus;
 
-import mockit.Deencapsulation;
 import mockit.Expectations;
 import mockit.Injectable;
 import mockit.Mock;
@@ -59,6 +58,8 @@ import mockit.Mocked;
 
 public class TestRemoteServiceRegistry {
   class TestingRemoteServiceRegistry extends RemoteServiceRegistry {
+    private ScheduledThreadPoolExecutor testTaskPool;
+
     public TestingRemoteServiceRegistry(EventBus eventBus, ServiceRegistryConfig serviceRegistryConfig,
         MicroserviceDefinition microserviceDefinition) {
       super(eventBus, serviceRegistryConfig, microserviceDefinition);
@@ -67,6 +68,18 @@ public class TestRemoteServiceRegistry {
     @Override
     protected ServiceRegistryClient createServiceRegistryClient() {
       return new LocalServiceRegistryClientImpl();
+    }
+
+    @Override
+    public ScheduledThreadPoolExecutor getTaskPool() {
+      if (null != testTaskPool) {
+        return testTaskPool;
+      }
+      return super.getTaskPool();
+    }
+
+    public void setTaskPool(ScheduledThreadPoolExecutor taskPool) {
+      this.testTaskPool = taskPool;
     }
   }
 
@@ -105,7 +118,7 @@ public class TestRemoteServiceRegistry {
         config.isWatch();
         result = false;
         SPIServiceUtils.getOrLoadSortedService(ServiceRegistryTaskInitializer.class);
-        result = Arrays.asList(initializer);
+        result = Collections.singletonList(initializer);
       }
     };
 
@@ -123,11 +136,8 @@ public class TestRemoteServiceRegistry {
 
     bus.post(new ShutdownEvent());
 
-    remote.getTaskPool().schedule(new Runnable() {
-      @Override
-      public void run() {
+    remote.getTaskPool().schedule(() -> {
 
-      }
     }, 0, TimeUnit.SECONDS);
     Assert.assertTrue(remote.getTaskPool().isShutdown());
     RegistryUtils.setServiceRegistry(oldRegistry);
@@ -165,9 +175,9 @@ public class TestRemoteServiceRegistry {
     expectedException.expectMessage(Matchers.is("ok"));
 
     EventBus bus = new EventBus();
-    RemoteServiceRegistry remote = new TestingRemoteServiceRegistry(bus, config, definition);
+    TestingRemoteServiceRegistry remote = new TestingRemoteServiceRegistry(bus, config, definition);
     bus.register(remote);
-    Deencapsulation.setField(remote, "taskPool", taskPool);
+    remote.setTaskPool(taskPool);
     bus.post(event);
   }
 }
