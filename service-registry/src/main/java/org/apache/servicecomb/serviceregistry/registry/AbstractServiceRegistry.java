@@ -52,6 +52,7 @@ import org.apache.servicecomb.serviceregistry.task.ServiceCenterTask;
 import org.apache.servicecomb.serviceregistry.task.event.ShutdownEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.StringUtils;
 
 import com.google.common.eventbus.EventBus;
 
@@ -86,17 +87,16 @@ public abstract class AbstractServiceRegistry implements ServiceRegistry {
 
   public AbstractServiceRegistry(EventBus eventBus, ServiceRegistryConfig serviceRegistryConfig,
       MicroserviceDefinition microserviceDefinition) {
-    this.eventBus = eventBus;
-    this.serviceRegistryConfig = serviceRegistryConfig;
-    this.microserviceDefinition = microserviceDefinition;
-    this.microservice = microserviceFactory.create(microserviceDefinition);
-    this.name = DEFAULT_SERVICE_REGISTRY;
+    this(eventBus, serviceRegistryConfig, microserviceDefinition, null);
   }
 
   public AbstractServiceRegistry(EventBus eventBus, ServiceRegistryConfig serviceRegistryConfig,
       MicroserviceDefinition microserviceDefinition, String name) {
-    this(eventBus, serviceRegistryConfig, microserviceDefinition);
-    this.name = name;
+    this.eventBus = eventBus;
+    this.serviceRegistryConfig = serviceRegistryConfig;
+    this.microserviceDefinition = microserviceDefinition;
+    this.microservice = microserviceFactory.create(microserviceDefinition);
+    this.name = StringUtils.isEmpty(name) ? DEFAULT_SERVICE_REGISTRY : name;
   }
 
   @Override
