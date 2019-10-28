@@ -247,7 +247,13 @@ public final class RegistryUtils {
   }
 
   public static Microservice getMicroservice(String microserviceId) {
-    return serviceRegistry.getRemoteMicroservice(microserviceId);
+    Holder<Microservice> result = new Holder<>();
+    executeOnEachServiceRegistry(registry -> {
+      if (null == result.getValue()) {
+        result.setValue(serviceRegistry.getRemoteMicroservice(microserviceId));
+      }
+    });
+    return result.getValue();
   }
 
   public static MicroserviceInstances findServiceInstances(String appId, String serviceName,
