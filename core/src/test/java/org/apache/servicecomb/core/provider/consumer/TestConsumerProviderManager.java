@@ -65,6 +65,7 @@ public class TestConsumerProviderManager {
     context.close();
   }
 
+  @SuppressWarnings("deprecation")
   private ReferenceConfig mockCreateReferenceConfig() {
     EventBus eventBus = new EventBus();
     AppManager appManager = new AppManager(eventBus);
@@ -111,6 +112,7 @@ public class TestConsumerProviderManager {
     Assert.assertEquals(Const.RESTFUL, referenceConfig.getTransport());
   }
 
+  @SuppressWarnings("deprecation")
   @Test
   public void createReferenceConfig_ProviderNotFound() {
     EventBus eventBus = new EventBus();

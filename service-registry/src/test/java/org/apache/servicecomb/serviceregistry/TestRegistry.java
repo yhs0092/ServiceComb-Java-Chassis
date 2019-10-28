@@ -79,6 +79,7 @@ public class TestRegistry {
     inMemoryConfig.clear();
   }
 
+  @SuppressWarnings("deprecation")
   @Test
   public void testDelegate() {
     ServiceRegistry serviceRegistry = ServiceRegistryFactory.createLocal();

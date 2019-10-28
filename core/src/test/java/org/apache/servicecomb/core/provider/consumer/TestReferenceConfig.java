@@ -84,6 +84,7 @@ public class TestReferenceConfig {
     Assert.assertSame(transport, referenceConfig.getTransport());
   }
 
+  @SuppressWarnings("deprecation")
   @Test
   public void unifyVersionRule(@Mocked MicroserviceVersionMeta microserviceVersionMeta) {
     String microserviceName = "app:ms";

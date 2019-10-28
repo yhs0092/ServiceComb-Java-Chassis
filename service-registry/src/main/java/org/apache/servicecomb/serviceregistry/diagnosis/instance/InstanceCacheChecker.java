@@ -80,6 +80,7 @@ public class InstanceCacheChecker {
     instanceCacheResult.setMicroserviceName(microserviceVersions.getMicroserviceName());
     instanceCacheResult.setPulledInstances(microserviceVersions.getPulledInstances());
 
+    @SuppressWarnings("deprecation")
     MicroserviceInstances microserviceInstances = RegistryUtils
         .findServiceInstances(microserviceVersions.getAppId(),
             microserviceVersions.getMicroserviceName(),

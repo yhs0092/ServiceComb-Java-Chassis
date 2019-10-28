@@ -35,6 +35,7 @@ import org.apache.servicecomb.foundation.common.net.IpPort;
 import org.apache.servicecomb.foundation.common.net.NetUtils;
 import org.apache.servicecomb.serviceregistry.api.registry.Microservice;
 import org.apache.servicecomb.serviceregistry.api.registry.MicroserviceInstance;
+import org.apache.servicecomb.serviceregistry.api.response.FindInstancesResponse;
 import org.apache.servicecomb.serviceregistry.cache.InstanceCacheManager;
 import org.apache.servicecomb.serviceregistry.client.ServiceRegistryClient;
 import org.apache.servicecomb.serviceregistry.client.http.Holder;
@@ -222,6 +223,10 @@ public final class RegistryUtils {
     return new IpPort(publicAddressSetting, publishPort);
   }
 
+  /**
+   * Consider using {@link #findServiceInstances(String, String, String)} instead.
+   */
+  @Deprecated
   public static List<MicroserviceInstance> findServiceInstance(String appId, String serviceName,
       String versionRule) {
     List<MicroserviceInstance> result = new ArrayList<>();
@@ -256,9 +261,53 @@ public final class RegistryUtils {
     return result.getValue();
   }
 
+  /**
+   * Consider using {@link #findServiceInstances(String, String, String)} instead.
+   */
+  @Deprecated
   public static MicroserviceInstances findServiceInstances(String appId, String serviceName,
       String versionRule, String revision) {
     return serviceRegistry.findServiceInstances(appId, serviceName, versionRule, revision);
+  }
+
+  /**
+   * Query the microservice instances specified by applicationId, microserviceName and versionRule.
+   */
+  public static MicroserviceInstances findServiceInstances(String appId, String serviceName, String versionRule) {
+    final ArrayList<MicroserviceInstances> resultList = new ArrayList<>(1);
+    executeOnEachServiceRegistry(registry -> {
+      final MicroserviceInstances serviceInstances = registry.findServiceInstances(appId, serviceName, versionRule);
+      if (null != serviceInstances) {
+        resultList.add(serviceInstances);
+      }
+    });
+
+    if (resultList.isEmpty()) {
+      return null;
+    }
+    if (resultList.size() == 1) {
+      // no need to merge
+      return resultList.get(0);
+    }
+    // Multiple ServiceRegistry instances return valid responses. These responses should be merged.
+    final MicroserviceInstances result = new MicroserviceInstances();
+    result.setNeedRefresh(false);
+    result.setMicroserviceNotExist(true);
+    List<MicroserviceInstance> finalInstanceList = new ArrayList<>();
+    resultList.forEach(microserviceInstances -> {
+      result.setNeedRefresh(result.isNeedRefresh() || microserviceInstances.isNeedRefresh());
+      result.setMicroserviceNotExist(result.isMicroserviceNotExist() && microserviceInstances.isMicroserviceNotExist());
+      FindInstancesResponse instancesResponse = microserviceInstances.getInstancesResponse();
+      if (null != instancesResponse
+          && null != instancesResponse.getInstances()
+          && !instancesResponse.getInstances().isEmpty()) {
+        finalInstanceList.addAll(instancesResponse.getInstances());
+      }
+    });
+
+    result.setInstancesResponse(new FindInstancesResponse());
+    result.getInstancesResponse().setInstances(finalInstanceList);
+    return result;
   }
 
   public static String calcSchemaSummary(String schemaContent) {

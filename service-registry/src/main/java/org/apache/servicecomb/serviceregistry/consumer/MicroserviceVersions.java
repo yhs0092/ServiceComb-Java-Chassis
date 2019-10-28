@@ -139,6 +139,7 @@ public class MicroserviceVersions {
       return;
     }
 
+    @SuppressWarnings("deprecation")
     MicroserviceInstances microserviceInstances = RegistryUtils.findServiceInstances(appId,
         microserviceName,
         DefinitionConst.VERSION_RULE_ALL,

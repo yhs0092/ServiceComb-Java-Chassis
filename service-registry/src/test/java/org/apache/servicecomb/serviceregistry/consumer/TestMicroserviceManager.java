@@ -76,6 +76,7 @@ public class TestMicroserviceManager {
     microserviceInstances = null;
   }
 
+  @SuppressWarnings("deprecation")
   @Test
   public void getOrCreateMicroserviceVersionRule() {
     new Expectations(RegistryUtils.class) {
@@ -92,6 +93,7 @@ public class TestMicroserviceManager {
     Assert.assertEquals(1, cachedVersions.size());
   }
 
+  @SuppressWarnings("deprecation")
   @Test
   public void testCreateRuleServiceNotExists() {
     new Expectations(RegistryUtils.class) {

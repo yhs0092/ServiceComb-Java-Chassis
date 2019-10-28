@@ -53,6 +53,25 @@ public interface ServiceRegistry {
   List<MicroserviceInstance> findServiceInstance(String appId, String microserviceName,
       String microserviceVersionRule);
 
+  /**
+   * Query the microservice instance list with the revision value cached in this ServiceRegistry instance.
+   * @see  #findServiceInstances(String, String, String, String)
+   */
+  MicroserviceInstances findServiceInstances(String appId, String serviceName, String versionRule);
+
+  /**
+   * Query the microservice instance list with the specified revision.
+   * The service center will return the microservice center list if the input revision value is outdated.
+   * Otherwise the service center will return 304
+   * @param appId the applicationId of the target service
+   * @param microserviceName the service name of the target service
+   * @param microserviceVersionRule the range of the service version you want to get
+   * @param revision this indicates whether the instance list you hold is latest. You should keep it from the response
+   * of service center, and use it in the next time you query the instance list to save the network bandwidth.
+   * @return the query result, it may carry the target service instance list if the service center get the list refreshed;
+   * or it's empty if the revision you input is the latest.
+   */
+  @Deprecated
   MicroserviceInstances findServiceInstances(String appId, String microserviceName,
       String microserviceVersionRule, String revision);
 
