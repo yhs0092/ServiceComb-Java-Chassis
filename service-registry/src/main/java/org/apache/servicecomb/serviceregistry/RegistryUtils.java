@@ -20,12 +20,16 @@ package org.apache.servicecomb.serviceregistry;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.function.Consumer;
 
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.servicecomb.config.ConfigUtil;
 import org.apache.servicecomb.config.archaius.sources.MicroserviceConfigLoader;
+import org.apache.servicecomb.foundation.common.concurrent.ConcurrentHashMapEx;
 import org.apache.servicecomb.foundation.common.event.EventManager;
 import org.apache.servicecomb.foundation.common.net.IpPort;
 import org.apache.servicecomb.foundation.common.net.NetUtils;
@@ -33,12 +37,14 @@ import org.apache.servicecomb.serviceregistry.api.registry.Microservice;
 import org.apache.servicecomb.serviceregistry.api.registry.MicroserviceInstance;
 import org.apache.servicecomb.serviceregistry.cache.InstanceCacheManager;
 import org.apache.servicecomb.serviceregistry.client.ServiceRegistryClient;
+import org.apache.servicecomb.serviceregistry.client.http.Holder;
 import org.apache.servicecomb.serviceregistry.client.http.MicroserviceInstances;
 import org.apache.servicecomb.serviceregistry.config.ServiceRegistryConfig;
 import org.apache.servicecomb.serviceregistry.definition.MicroserviceDefinition;
 import org.apache.servicecomb.serviceregistry.registry.ServiceRegistryFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.StringUtils;
 
 import com.google.common.base.Charsets;
 import com.google.common.hash.Hashing;
@@ -54,24 +60,32 @@ public final class RegistryUtils {
 
   private static final String PUBLISH_PORT = "servicecomb.{transport_name}.publishPort";
 
+  /**
+   * This map holds all of the extra {@link ServiceRegistry} instances manually registered by users.
+   * It's used in the situation that the microservice instance needs to be registered into multiple
+   * service center clusters.
+   * The key is the name of the ServiceRegistry instances.
+   */
+  private static final Map<String, ServiceRegistry> EXTRA_SERVICE_REGISTRIES = new ConcurrentHashMapEx<>(0);
+
   private RegistryUtils() {
   }
 
   public static void init() {
     MicroserviceConfigLoader loader = ConfigUtil.getMicroserviceConfigLoader();
-    MicroserviceDefinition microserviceDefinition = new MicroserviceDefinition(loader.getConfigModels());
+    MicroserviceDefinition defaultMicroserviceDefinition = new MicroserviceDefinition(loader.getConfigModels());
     serviceRegistry =
         ServiceRegistryFactory
-            .getOrCreate(EventManager.eventBus, ServiceRegistryConfig.INSTANCE, microserviceDefinition);
-    serviceRegistry.init();
+            .getOrCreate(EventManager.eventBus, ServiceRegistryConfig.INSTANCE, defaultMicroserviceDefinition);
+    executeOnEachServiceRegistry(ServiceRegistry::init);
   }
 
   public static void run() {
-    serviceRegistry.run();
+    executeOnEachServiceRegistry(ServiceRegistry::run);
   }
 
   public static void destroy() {
-    serviceRegistry.destroy();
+    executeOnEachServiceRegistry(ServiceRegistry::destroy);
   }
 
   /**
@@ -210,12 +224,26 @@ public final class RegistryUtils {
 
   public static List<MicroserviceInstance> findServiceInstance(String appId, String serviceName,
       String versionRule) {
-    return serviceRegistry.findServiceInstance(appId, serviceName, versionRule);
+    List<MicroserviceInstance> result = new ArrayList<>();
+    executeOnEachServiceRegistry(registry -> {
+      List<MicroserviceInstance> instanceList = registry.findServiceInstance(appId, serviceName, versionRule);
+      if (null != instanceList && !instanceList.isEmpty()) {
+        result.addAll(instanceList);
+      }
+    });
+    return result;
   }
 
   // update microservice instance properties
   public static boolean updateInstanceProperties(Map<String, String> instanceProperties) {
-    return serviceRegistry.updateInstanceProperties(instanceProperties);
+    Holder<Boolean> result = new Holder<>();
+    result.setValue(Boolean.TRUE);
+    executeOnEachServiceRegistry(registry -> {
+      if (!registry.updateInstanceProperties(instanceProperties)) {
+        result.setValue(Boolean.FALSE);
+      }
+    });
+    return result.getValue();
   }
 
   public static Microservice getMicroservice(String microserviceId) {
@@ -229,5 +257,64 @@ public final class RegistryUtils {
 
   public static String calcSchemaSummary(String schemaContent) {
     return Hashing.sha256().newHasher().putString(schemaContent, Charsets.UTF_8).hash().toString();
+  }
+
+  /**
+   * Add a {@link ServiceRegistry} instance into the {@link #EXTRA_SERVICE_REGISTRIES}.
+   * These extra ServiceRegistry instances works almost the same as the default registry {@link #serviceRegistry}.
+   * <p/>
+   * <em>Notice that this method <b>ONLY</b> add the instance into the {@link #EXTRA_SERVICE_REGISTRIES}
+   * without anymore initialization operation. The invoker should handle the initialization operations,
+   * like {@link ServiceRegistry#init()} by himself.</em>
+   *
+   * @param serviceRegistry The added extra ServiceRegistry instance, which should be assigned a unique name.
+   * @throws NullPointerException if the input {@code serviceRegistry} is null
+   * @throws IllegalArgumentException if the name of the {@code serviceRegistry} is empty
+   * or is duplicate with another extra ServiceRegistry instance.
+   */
+  public static void addExtraServiceRegistry(ServiceRegistry serviceRegistry) {
+    synchronized (EXTRA_SERVICE_REGISTRIES) {
+      Objects.requireNonNull(serviceRegistry);
+      if (StringUtils.isEmpty(serviceRegistry.name())) {
+        throw new IllegalArgumentException("The name of ServiceRegistry is empty");
+      }
+      if (EXTRA_SERVICE_REGISTRIES.containsKey(serviceRegistry.name())) {
+        throw new IllegalArgumentException("Duplicated ServiceRegistry name: " + serviceRegistry.name());
+      }
+      EXTRA_SERVICE_REGISTRIES.put(serviceRegistry.name(), serviceRegistry);
+    }
+  }
+
+  /**
+   * Remove an extra ServiceRegistry instance specified by the {@code registryName}.
+   * <p/>
+   * <em>Notice that this method <b>ONLY</b> remove the instance from the {@link #EXTRA_SERVICE_REGISTRIES}
+   * without anymore clean up operation. The invoker should handle the clean up operations,
+   * like {@link ServiceRegistry#destroy()} by himself.</em>
+   *
+   * @param registryName The name of the ServiceRegistry instance to be removed
+   * @return The removed ServiceRegistry instance, or null if there is no instance matched.
+   * @throws IllegalArgumentException if the input {@code registryName} is empty
+   */
+  public static ServiceRegistry removeExtraServiceRegistry(String registryName) {
+    synchronized (EXTRA_SERVICE_REGISTRIES) {
+      if (StringUtils.isEmpty(registryName)) {
+        throw new IllegalArgumentException("The registryName is empty");
+      }
+      return EXTRA_SERVICE_REGISTRIES.remove(registryName);
+    }
+  }
+
+  /**
+   * The {@code action} is applied to all of the ServiceRegistry instances
+   * including the default one {@link #serviceRegistry} and all in the {@link #EXTRA_SERVICE_REGISTRIES}
+   */
+  private static void executeOnEachServiceRegistry(Consumer<ServiceRegistry> action) {
+    if (null != serviceRegistry) {
+      action.accept(serviceRegistry);
+    }
+    if (!EXTRA_SERVICE_REGISTRIES.isEmpty()) {
+      EXTRA_SERVICE_REGISTRIES.values().forEach(action);
+    }
   }
 }

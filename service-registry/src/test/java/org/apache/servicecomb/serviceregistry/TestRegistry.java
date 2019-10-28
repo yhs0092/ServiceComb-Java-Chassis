@@ -100,7 +100,7 @@ public class TestRegistry {
     Assert.assertEquals(RegistryUtils.getMicroservice().getServiceId(), instanceList.get(0).getServiceId());
 
     instanceList = RegistryUtils.findServiceInstance("default", "notExists", "0.0.1");
-    Assert.assertEquals(null, instanceList);
+    Assert.assertTrue(instanceList.isEmpty());
 
     MicroserviceInstances microserviceInstances =
         RegistryUtils.findServiceInstances("default", "default", "0.0.1", "0");

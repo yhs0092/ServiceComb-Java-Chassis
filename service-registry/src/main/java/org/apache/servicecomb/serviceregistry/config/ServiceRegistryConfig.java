@@ -25,6 +25,7 @@ import org.apache.servicecomb.deployment.Deployment;
 import org.apache.servicecomb.deployment.DeploymentProvider;
 import org.apache.servicecomb.foundation.common.net.IpPort;
 import org.apache.servicecomb.foundation.common.net.NetUtils;
+import org.apache.servicecomb.serviceregistry.ServiceRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -99,8 +100,11 @@ public final class ServiceRegistryConfig {
 
   public static final String WORKER_POOL_NAME = "registry-vert.x-worker-thread";
 
-  private ServiceRegistryConfig() {
+  private String registryName = ServiceRegistry.DEFAULT_SERVICE_REGISTRY;
 
+  private ArrayList<IpPort> ipPorts;
+
+  public ServiceRegistryConfig() {
   }
 
   public String getMicroserviceVersionFactory() {
@@ -136,13 +140,20 @@ public final class ServiceRegistryConfig {
     return deployInstances;
   }
 
-
   public boolean isSsl() {
     getIpPort();
     return this.ssl;
   }
 
+  public ServiceRegistryConfig setIpPorts(ArrayList<IpPort> ipPorts) {
+    this.ipPorts = ipPorts;
+    return this;
+  }
+
   public ArrayList<IpPort> getIpPort() {
+    if (null != ipPorts) {
+      return ipPorts;
+    }
     List<String> uriList = Deployment.getSystemBootStrapInfo(DeploymentProvider.SYSTEM_KEY_SERVICE_CENTER)
         .getAccessURL();
     ArrayList<IpPort> ipPortList = new ArrayList<>();
@@ -339,5 +350,14 @@ public final class ServiceRegistryConfig {
     } else {
       return defaultValue;
     }
+  }
+
+  public String getRegistryName() {
+    return registryName;
+  }
+
+  public ServiceRegistryConfig setRegistryName(String registryName) {
+    this.registryName = registryName;
+    return this;
   }
 }
