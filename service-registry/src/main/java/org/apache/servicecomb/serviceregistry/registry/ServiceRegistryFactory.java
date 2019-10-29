@@ -69,6 +69,7 @@ public final class ServiceRegistryFactory {
 
   public static ServiceRegistry create(EventBus eventBus, ServiceRegistryConfig serviceRegistryConfig,
       MicroserviceDefinition microserviceDefinition) {
+    LOGGER.info("Create a ServiceRegistry instance named: [{}]", serviceRegistryConfig.getRegistryName());
     String localModeFile = System.getProperty(LocalServiceRegistryClientImpl.LOCAL_REGISTRY_FILE_KEY);
     if (!StringUtils.isEmpty(localModeFile)) {
       LOGGER.info(

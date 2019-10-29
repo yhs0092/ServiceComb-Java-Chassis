@@ -69,6 +69,8 @@ public final class RegistryUtils {
    */
   private static final Map<String, ServiceRegistry> EXTRA_SERVICE_REGISTRIES = new ConcurrentHashMapEx<>(0);
 
+  private static final Map<String, ServiceRegistryConfig> EXTRA_SERVICE_REGISTRY_CONFIGS = new ConcurrentHashMapEx<>(0);
+
   private RegistryUtils() {
   }
 
@@ -78,6 +80,7 @@ public final class RegistryUtils {
     serviceRegistry =
         ServiceRegistryFactory
             .getOrCreate(EventManager.eventBus, ServiceRegistryConfig.INSTANCE, defaultMicroserviceDefinition);
+    instantiateExtraServiceRegistries(defaultMicroserviceDefinition);
     executeOnEachServiceRegistry(ServiceRegistry::init);
   }
 
@@ -357,6 +360,20 @@ public final class RegistryUtils {
   }
 
   /**
+   * Add the configuration object of {@link ServiceRegistry}.
+   * The corresponding ServiceRegistry instances are instantiated later in {@link #init()}
+   *
+   * @param serviceRegistryConfig The configuration of ServiceRegistry, one for a ServiceRegistry instance
+   */
+  public static void addExtraServiceRegistryConfig(ServiceRegistryConfig serviceRegistryConfig) {
+    Objects.requireNonNull(serviceRegistryConfig);
+    if (StringUtils.isEmpty(serviceRegistryConfig.getRegistryName())) {
+      throw new IllegalArgumentException("The registryName is empty");
+    }
+    EXTRA_SERVICE_REGISTRY_CONFIGS.put(serviceRegistryConfig.getRegistryName(), serviceRegistryConfig);
+  }
+
+  /**
    * The {@code action} is applied to all of the ServiceRegistry instances
    * including the default one {@link #serviceRegistry} and all in the {@link #EXTRA_SERVICE_REGISTRIES}
    */
@@ -367,5 +384,18 @@ public final class RegistryUtils {
     if (!EXTRA_SERVICE_REGISTRIES.isEmpty()) {
       EXTRA_SERVICE_REGISTRIES.values().forEach(action);
     }
+  }
+
+  private static void instantiateExtraServiceRegistries(MicroserviceDefinition defaultMicroserviceDefinition) {
+    if (EXTRA_SERVICE_REGISTRY_CONFIGS.isEmpty()) {
+      return;
+    }
+    EXTRA_SERVICE_REGISTRY_CONFIGS.values().forEach(config -> {
+          ServiceRegistry extraServiceRegistry =
+              ServiceRegistryFactory.create(EventManager.getEventBus(), config, defaultMicroserviceDefinition);
+          LOGGER.info("extra ServiceRegistry added: [{}]", extraServiceRegistry.name());
+          addExtraServiceRegistry(extraServiceRegistry);
+        }
+    );
   }
 }
