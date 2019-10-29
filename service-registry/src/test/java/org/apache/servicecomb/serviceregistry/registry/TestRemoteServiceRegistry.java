@@ -117,6 +117,8 @@ public class TestRemoteServiceRegistry {
         result = 30;
         config.isWatch();
         result = false;
+        config.getRegistryName();
+        result = "test-registry";
         SPIServiceUtils.getOrLoadSortedService(ServiceRegistryTaskInitializer.class);
         result = Collections.singletonList(initializer);
       }
@@ -136,6 +138,7 @@ public class TestRemoteServiceRegistry {
 
     bus.post(new ShutdownEvent());
 
+    Assert.assertEquals("test-registry", remote.name());
     remote.getTaskPool().schedule(() -> {
 
     }, 0, TimeUnit.SECONDS);
@@ -168,6 +171,8 @@ public class TestRemoteServiceRegistry {
         result = "1.0.0";
         configuration.getString(CONFIG_QUALIFIED_INSTANCE_INITIAL_STATUS, DEFAULT_INSTANCE_INITIAL_STATUS);
         result = MicroserviceInstanceStatus.UP.name();
+        config.getRegistryName();
+        result = "registry-name";
       }
     };
 

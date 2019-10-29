@@ -90,16 +90,14 @@ public abstract class AbstractServiceRegistry implements ServiceRegistry {
 
   public AbstractServiceRegistry(EventBus eventBus, ServiceRegistryConfig serviceRegistryConfig,
       MicroserviceDefinition microserviceDefinition) {
-    this(eventBus, serviceRegistryConfig, microserviceDefinition, null);
-  }
-
-  public AbstractServiceRegistry(EventBus eventBus, ServiceRegistryConfig serviceRegistryConfig,
-      MicroserviceDefinition microserviceDefinition, String name) {
+    if (StringUtils.isEmpty(serviceRegistryConfig.getRegistryName())) {
+      throw new IllegalArgumentException("Empty ServiceRegistry name is not allowed!");
+    }
+    this.name = serviceRegistryConfig.getRegistryName();
     this.eventBus = eventBus;
     this.serviceRegistryConfig = serviceRegistryConfig;
     this.microserviceDefinition = microserviceDefinition;
     this.microservice = microserviceFactory.create(microserviceDefinition);
-    this.name = StringUtils.isEmpty(name) ? ServiceRegistry.DEFAULT_SERVICE_REGISTRY : name;
   }
 
   @Override

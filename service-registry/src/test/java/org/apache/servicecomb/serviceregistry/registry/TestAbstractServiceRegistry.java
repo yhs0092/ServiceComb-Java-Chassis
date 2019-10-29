@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.apache.servicecomb.serviceregistry.RegistryUtils;
-import org.apache.servicecomb.serviceregistry.ServiceRegistry;
 import org.apache.servicecomb.serviceregistry.api.registry.MicroserviceInstance;
 import org.apache.servicecomb.serviceregistry.client.ServiceRegistryClient;
 import org.apache.servicecomb.serviceregistry.config.ServiceRegistryConfig;
@@ -85,6 +84,12 @@ public class TestAbstractServiceRegistry {
 
   @Before
   public void setup() {
+    new Expectations() {
+      {
+        serviceRegistryConfig.getRegistryName();
+        result = "test-registry";
+      }
+    };
     registry =
         new AbstractServiceRegistryForTest(eventBus, serviceRegistryConfig, microserviceDefinition);
     RegistryUtils.setServiceRegistry(registry);
@@ -106,7 +111,7 @@ public class TestAbstractServiceRegistry {
 
     Assert.assertThat(registry.appManager.getMicroserviceVersionFactory(),
         Matchers.instanceOf(DefaultMicroserviceVersionFactory.class));
-    Assert.assertEquals(ServiceRegistry.DEFAULT_SERVICE_REGISTRY, registry.name());
+    Assert.assertEquals("test-registry", registry.name());
   }
 
   @Test

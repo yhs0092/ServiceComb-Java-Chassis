@@ -24,14 +24,18 @@ import org.apache.servicecomb.serviceregistry.api.registry.Microservice;
 import org.apache.servicecomb.serviceregistry.api.registry.MicroserviceInstance;
 import org.apache.servicecomb.serviceregistry.api.registry.StaticMicroservice;
 import org.apache.servicecomb.serviceregistry.client.ServiceRegistryClient;
+import org.apache.servicecomb.serviceregistry.config.ServiceRegistryConfig;
 import org.apache.servicecomb.serviceregistry.definition.MicroserviceDefinition;
 import org.apache.servicecomb.serviceregistry.registry.AbstractServiceRegistry;
 import org.apache.servicecomb.serviceregistry.version.Version;
 import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
 
 import com.google.common.eventbus.EventBus;
+
+import mockit.Expectations;
+import mockit.Mocked;
 
 public class StaticMicroserviceVersionsTest {
 
@@ -45,9 +49,18 @@ public class StaticMicroserviceVersionsTest {
 
   private static final String SERVICE_ID_PREFIX = APP_ID + "-" + ENVIRONMENT + "-" + MICROSERVICE_NAME + "-";
 
-  @BeforeClass
-  public static void beforeClass() {
-    RegistryUtils.setServiceRegistry(new AbstractServiceRegistry(null, null,
+  @Mocked
+  private ServiceRegistryConfig serviceRegistryConfig;
+
+  @Before
+  public void before() {
+    new Expectations() {
+      {
+        serviceRegistryConfig.getRegistryName();
+        result = "test-registry";
+      }
+    };
+    RegistryUtils.setServiceRegistry(new AbstractServiceRegistry(null, serviceRegistryConfig,
         MicroserviceDefinition.create(APP_ID, THIS_SERVICE)) {
       @Override
       protected ServiceRegistryClient createServiceRegistryClient() {
