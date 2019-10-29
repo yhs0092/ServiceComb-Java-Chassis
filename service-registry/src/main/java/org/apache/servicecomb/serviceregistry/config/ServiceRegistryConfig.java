@@ -140,6 +140,11 @@ public final class ServiceRegistryConfig {
     return deployInstances;
   }
 
+  public ServiceRegistryConfig setSsl(boolean ssl) {
+    this.ssl = ssl;
+    return this;
+  }
+
   public boolean isSsl() {
     getIpPort();
     return this.ssl;
