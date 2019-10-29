@@ -328,16 +328,14 @@ public final class RegistryUtils {
    * or is duplicate with another extra ServiceRegistry instance.
    */
   public static void addExtraServiceRegistry(ServiceRegistry serviceRegistry) {
-    synchronized (EXTRA_SERVICE_REGISTRIES) {
-      Objects.requireNonNull(serviceRegistry);
-      if (StringUtils.isEmpty(serviceRegistry.name())) {
-        throw new IllegalArgumentException("The name of ServiceRegistry is empty");
-      }
-      if (EXTRA_SERVICE_REGISTRIES.containsKey(serviceRegistry.name())) {
-        throw new IllegalArgumentException("Duplicated ServiceRegistry name: " + serviceRegistry.name());
-      }
-      EXTRA_SERVICE_REGISTRIES.put(serviceRegistry.name(), serviceRegistry);
+    Objects.requireNonNull(serviceRegistry);
+    if (StringUtils.isEmpty(serviceRegistry.name())) {
+      throw new IllegalArgumentException("The name of ServiceRegistry is empty");
     }
+    if (EXTRA_SERVICE_REGISTRIES.containsKey(serviceRegistry.name())) {
+      throw new IllegalArgumentException("Duplicated ServiceRegistry name: " + serviceRegistry.name());
+    }
+    EXTRA_SERVICE_REGISTRIES.put(serviceRegistry.name(), serviceRegistry);
   }
 
   /**
@@ -352,12 +350,10 @@ public final class RegistryUtils {
    * @throws IllegalArgumentException if the input {@code registryName} is empty
    */
   public static ServiceRegistry removeExtraServiceRegistry(String registryName) {
-    synchronized (EXTRA_SERVICE_REGISTRIES) {
-      if (StringUtils.isEmpty(registryName)) {
-        throw new IllegalArgumentException("The registryName is empty");
-      }
-      return EXTRA_SERVICE_REGISTRIES.remove(registryName);
+    if (StringUtils.isEmpty(registryName)) {
+      throw new IllegalArgumentException("The registryName is empty");
     }
+    return EXTRA_SERVICE_REGISTRIES.remove(registryName);
   }
 
   /**
