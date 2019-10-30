@@ -124,7 +124,7 @@ public class TestMicroserviceVersions {
     new MockUp<RegistryUtils>() {
       @Mock
       MicroserviceInstances findServiceInstances(String appId, String serviceName,
-          String versionRule, String revision) {
+          String versionRule) {
         return microserviceInstances;
       }
 
@@ -199,7 +199,7 @@ public class TestMicroserviceVersions {
     new MockUp<RegistryUtils>() {
       @Mock
       MicroserviceInstances findServiceInstances(String appId, String serviceName,
-          String versionRule, String revision) {
+          String versionRule) {
         return null;
       }
     };
@@ -218,7 +218,7 @@ public class TestMicroserviceVersions {
     new MockUp<RegistryUtils>() {
       @Mock
       MicroserviceInstances findServiceInstances(String appId, String serviceName,
-          String versionRule, String revision) {
+          String versionRule) {
         return microserviceInstances;
       }
     };

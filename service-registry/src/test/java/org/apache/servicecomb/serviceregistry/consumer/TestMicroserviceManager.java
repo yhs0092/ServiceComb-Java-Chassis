@@ -76,12 +76,11 @@ public class TestMicroserviceManager {
     microserviceInstances = null;
   }
 
-  @SuppressWarnings("deprecation")
   @Test
   public void getOrCreateMicroserviceVersionRule() {
     new Expectations(RegistryUtils.class) {
       {
-        RegistryUtils.findServiceInstances(appId, serviceName, DefinitionConst.VERSION_RULE_ALL, null);
+        RegistryUtils.findServiceInstances(appId, serviceName, DefinitionConst.VERSION_RULE_ALL);
         result = microserviceInstances;
       }
     };
@@ -93,12 +92,11 @@ public class TestMicroserviceManager {
     Assert.assertEquals(1, cachedVersions.size());
   }
 
-  @SuppressWarnings("deprecation")
   @Test
   public void testCreateRuleServiceNotExists() {
     new Expectations(RegistryUtils.class) {
       {
-        RegistryUtils.findServiceInstances(appId, serviceName, DefinitionConst.VERSION_RULE_ALL, null);
+        RegistryUtils.findServiceInstances(appId, serviceName, DefinitionConst.VERSION_RULE_ALL);
         result = null;
       }
     };

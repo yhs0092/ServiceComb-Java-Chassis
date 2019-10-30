@@ -75,7 +75,7 @@ public class TestConsumerProviderManager {
 
     new Expectations(RegistryUtils.class) {
       {
-        RegistryUtils.findServiceInstances(anyString, anyString, DefinitionConst.VERSION_RULE_ALL, null);
+        RegistryUtils.findServiceInstances(anyString, anyString, DefinitionConst.VERSION_RULE_ALL);
         result = Collections.emptyList();
       }
     };
@@ -123,7 +123,7 @@ public class TestConsumerProviderManager {
 
     new Expectations(RegistryUtils.class) {
       {
-        RegistryUtils.findServiceInstances(anyString, anyString, DefinitionConst.VERSION_RULE_ALL, null);
+        RegistryUtils.findServiceInstances(anyString, anyString, DefinitionConst.VERSION_RULE_ALL);
         result = Collections.emptyList();
       }
     };

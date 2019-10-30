@@ -92,7 +92,7 @@ public class TestReferenceConfig {
 
     new Expectations(RegistryUtils.class) {
       {
-        RegistryUtils.findServiceInstances(anyString, anyString, anyString, anyString);
+        RegistryUtils.findServiceInstances(anyString, anyString, anyString);
         result = Collections.emptyList();
       }
     };

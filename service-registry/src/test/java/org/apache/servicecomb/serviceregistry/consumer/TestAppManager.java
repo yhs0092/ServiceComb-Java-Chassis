@@ -67,12 +67,11 @@ public class TestAppManager {
     microserviceInstances = null;
   }
 
-  @SuppressWarnings("deprecation")
   @Test
   public void getOrCreateMicroserviceVersionRule() {
     new Expectations(RegistryUtils.class) {
       {
-        RegistryUtils.findServiceInstances(appId, serviceName, DefinitionConst.VERSION_RULE_ALL, null);
+        RegistryUtils.findServiceInstances(appId, serviceName, DefinitionConst.VERSION_RULE_ALL);
         result = microserviceInstances;
       }
     };
@@ -83,12 +82,11 @@ public class TestAppManager {
     Assert.assertNull(microserviceVersionRule.getLatestMicroserviceVersion());
   }
 
-  @SuppressWarnings("deprecation")
   @Test
   public void getOrCreateMicroserviceVersions() {
     new Expectations(RegistryUtils.class) {
       {
-        RegistryUtils.findServiceInstances(appId, serviceName, DefinitionConst.VERSION_RULE_ALL, null);
+        RegistryUtils.findServiceInstances(appId, serviceName, DefinitionConst.VERSION_RULE_ALL);
         result = microserviceInstances;
       }
     };

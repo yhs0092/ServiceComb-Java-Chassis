@@ -104,7 +104,7 @@ public class TestRegistry {
     Assert.assertTrue(instanceList.isEmpty());
 
     MicroserviceInstances microserviceInstances =
-        RegistryUtils.findServiceInstances("default", "default", "0.0.1", "0");
+        RegistryUtils.findServiceInstances("default", "default", "0.0.1");
     List<MicroserviceInstance> instanceLists = microserviceInstances.getInstancesResponse().getInstances();
     Assert.assertEquals(1, instanceLists.size());
     Assert.assertEquals(RegistryUtils.getMicroservice().getServiceId(), instanceLists.get(0).getServiceId());
