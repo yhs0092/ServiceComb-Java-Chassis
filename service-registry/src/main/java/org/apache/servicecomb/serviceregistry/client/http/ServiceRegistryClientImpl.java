@@ -77,7 +77,9 @@ public final class ServiceRegistryClientImpl implements ServiceRegistryClient {
   private static final Logger LOGGER = LoggerFactory.getLogger(ServiceRegistryClientImpl.class);
 
   private static final String ERROR_CODE = "errorCode";
+
   private static final String ERR_SERVICE_NOT_EXISTS = "400012";
+
   private static final String ERR_SCHEMA_NOT_EXISTS = "400016";
 
   private IpPortManager ipPortManager;
@@ -86,8 +88,15 @@ public final class ServiceRegistryClientImpl implements ServiceRegistryClient {
   // extract this, ServiceRegistryClient is better to be no status.
   private Map<String, Boolean> watchServices = new ConcurrentHashMap<>();
 
+  private RestUtils restUtils;
+
   public ServiceRegistryClientImpl(IpPortManager ipPortManager) {
+    this(ipPortManager, RestUtils.getInstance());
+  }
+
+  public ServiceRegistryClientImpl(IpPortManager ipPortManager, RestUtils restUtils) {
     this.ipPortManager = ipPortManager;
+    this.restUtils = restUtils;
   }
 
   private LoadingCache<String, Map<String, String>> schemaCache = CacheBuilder.newBuilder()
@@ -110,7 +119,7 @@ public final class ServiceRegistryClientImpl implements ServiceRegistryClient {
     LOGGER.warn("invoke service [{}] failed, retry.", requestContext.getUri());
     requestContext.setIpPort(ipPortManager.getNextAvailableAddress(requestContext.getIpPort()));
     requestContext.incrementRetryTimes();
-    RestUtils.getInstance().httpDo(requestContext, responseHandler);
+    restUtils.httpDo(requestContext, responseHandler);
   }
 
   @VisibleForTesting
@@ -281,7 +290,7 @@ public final class ServiceRegistryClientImpl implements ServiceRegistryClient {
     IpPort ipPort = ipPortManager.getAvailableAddress();
 
     CountDownLatch countDownLatch = new CountDownLatch(1);
-    RestUtils.getInstance().get(ipPort,
+    restUtils.get(ipPort,
         Const.REGISTRY_API.MICROSERVICE_OPERATION_ALL,
         new RequestParam(),
         syncHandler(countDownLatch, GetAllServicesResponse.class, holder));
@@ -302,7 +311,7 @@ public final class ServiceRegistryClientImpl implements ServiceRegistryClient {
     IpPort ipPort = ipPortManager.getAvailableAddress();
 
     CountDownLatch countDownLatch = new CountDownLatch(1);
-    RestUtils.getInstance().get(ipPort,
+    restUtils.get(ipPort,
         Const.REGISTRY_API.MICROSERVICE_EXISTENCE,
         new RequestParam().addQueryParam("type", "microservice")
             .addQueryParam("appId", appId)
@@ -331,7 +340,7 @@ public final class ServiceRegistryClientImpl implements ServiceRegistryClient {
     IpPort ipPort = ipPortManager.getAvailableAddress();
 
     CountDownLatch countDownLatch = new CountDownLatch(1);
-    RestUtils.getInstance().get(ipPort,
+    restUtils.get(ipPort,
         Const.REGISTRY_API.MICROSERVICE_EXISTENCE,
         new RequestParam().addQueryParam("type", "schema")
             .addQueryParam("serviceId", microserviceId)
@@ -360,7 +369,7 @@ public final class ServiceRegistryClientImpl implements ServiceRegistryClient {
       byte[] body = JsonUtils.writeValueAsBytes(request);
 
       CountDownLatch countDownLatch = new CountDownLatch(1);
-      RestUtils.getInstance().put(ipPort,
+      restUtils.put(ipPort,
           String.format(Const.REGISTRY_API.MICROSERVICE_SCHEMA, microserviceId, schemaId),
           new RequestParam().setBody(body),
           syncHandlerEx(countDownLatch, holder));
@@ -418,7 +427,7 @@ public final class ServiceRegistryClientImpl implements ServiceRegistryClient {
     if (global) {
       param.addQueryParam("global", "true");
     }
-    RestUtils.getInstance().get(ipPort,
+    restUtils.get(ipPort,
         String.format(Const.REGISTRY_API.MICROSERVICE_SCHEMA, microserviceId, schemaId),
         param,
         syncHandler(countDownLatch, GetSchemaResponse.class, holder));
@@ -461,7 +470,7 @@ public final class ServiceRegistryClientImpl implements ServiceRegistryClient {
       requestParam.addQueryParam("global", "true");
     }
 
-    RestUtils.getInstance().get(ipPort,
+    restUtils.get(ipPort,
         String.format(url, microserviceId),
         requestParam,
         syncHandler(countDownLatch, GetSchemasResponse.class, holder));
@@ -497,7 +506,7 @@ public final class ServiceRegistryClientImpl implements ServiceRegistryClient {
       }
 
       CountDownLatch countDownLatch = new CountDownLatch(1);
-      RestUtils.getInstance().post(ipPort,
+      restUtils.post(ipPort,
           Const.REGISTRY_API.MICROSERVICE_OPERATION_ALL,
           new RequestParam().setBody(body),
           syncHandler(countDownLatch, CreateServiceResponse.class, holder));
@@ -529,7 +538,7 @@ public final class ServiceRegistryClientImpl implements ServiceRegistryClient {
     if (global) {
       param.addQueryParam("global", "true");
     }
-    RestUtils.getInstance().get(ipPort,
+    restUtils.get(ipPort,
         String.format(Const.REGISTRY_API.MICROSERVICE_OPERATION_ONE, microserviceId),
         param,
         syncHandler(countDownLatch, GetServiceResponse.class, holder));
@@ -564,7 +573,7 @@ public final class ServiceRegistryClientImpl implements ServiceRegistryClient {
       }
 
       CountDownLatch countDownLatch = new CountDownLatch(1);
-      RestUtils.getInstance().post(ipPort,
+      restUtils.post(ipPort,
           String.format(Const.REGISTRY_API.MICROSERVICE_INSTANCE_OPERATION_ALL, instance.getServiceId()),
           new RequestParam().setBody(body),
           syncHandler(countDownLatch, RegisterInstanceResponse.class, holder));
@@ -584,7 +593,7 @@ public final class ServiceRegistryClientImpl implements ServiceRegistryClient {
     IpPort ipPort = ipPortManager.getAvailableAddress();
 
     CountDownLatch countDownLatch = new CountDownLatch(1);
-    RestUtils.getInstance().get(ipPort,
+    restUtils.get(ipPort,
         String.format(Const.REGISTRY_API.MICROSERVICE_INSTANCE_OPERATION_ALL, providerId),
         new RequestParam().addHeader("X-ConsumerId", consumerId),
         syncHandler(countDownLatch, GetInstancesResponse.class, holder));
@@ -605,7 +614,7 @@ public final class ServiceRegistryClientImpl implements ServiceRegistryClient {
     IpPort ipPort = ipPortManager.getAvailableAddress();
 
     CountDownLatch countDownLatch = new CountDownLatch(1);
-    RestUtils.getInstance().delete(ipPort,
+    restUtils.delete(ipPort,
         String.format(Const.REGISTRY_API.MICROSERVICE_INSTANCE_OPERATION_ONE, microserviceId, microserviceInstanceId),
         new RequestParam(),
         syncHandler(countDownLatch, HttpClientResponse.class, holder));
@@ -632,7 +641,7 @@ public final class ServiceRegistryClientImpl implements ServiceRegistryClient {
     IpPort ipPort = ipPortManager.getAvailableAddress();
 
     CountDownLatch countDownLatch = new CountDownLatch(1);
-    RestUtils.getInstance().put(ipPort,
+    restUtils.put(ipPort,
         String.format(Const.REGISTRY_API.MICROSERVICE_HEARTBEAT, microserviceId, microserviceInstanceId),
         new RequestParam().setTimeout(ServiceRegistryConfig.INSTANCE.getHeartBeatRequestTimeout()),
         syncHandler(countDownLatch, HttpClientResponse.class, holder));
@@ -750,7 +759,7 @@ public final class ServiceRegistryClientImpl implements ServiceRegistryClient {
       requestParam.addQueryParam("rev", revision);
     }
 
-    RestUtils.getInstance().get(ipPort,
+    restUtils.get(ipPort,
         Const.REGISTRY_API.MICROSERVICE_INSTANCES,
         requestParam,
         syncHandlerForInstances(countDownLatch, microserviceInstances));
@@ -802,7 +811,7 @@ public final class ServiceRegistryClientImpl implements ServiceRegistryClient {
       }
 
       CountDownLatch countDownLatch = new CountDownLatch(1);
-      RestUtils.getInstance().put(ipPort,
+      restUtils.put(ipPort,
           String.format(Const.REGISTRY_API.MICROSERVICE_PROPERTIES, microserviceId),
           new RequestParam().setBody(body),
           syncHandler(countDownLatch, HttpClientResponse.class, holder));
@@ -839,7 +848,7 @@ public final class ServiceRegistryClientImpl implements ServiceRegistryClient {
       }
 
       CountDownLatch countDownLatch = new CountDownLatch(1);
-      RestUtils.getInstance().put(ipPort,
+      restUtils.put(ipPort,
           String.format(Const.REGISTRY_API.MICROSERVICE_INSTANCE_PROPERTIES, microserviceId, microserviceInstanceId),
           new RequestParam().setBody(body),
           syncHandler(countDownLatch, HttpClientResponse.class, holder));
@@ -866,7 +875,7 @@ public final class ServiceRegistryClientImpl implements ServiceRegistryClient {
       Holder<MicroserviceInstanceResponse> holder = new Holder<>();
       IpPort ipPort = ipPortManager.getAvailableAddress();
       CountDownLatch countDownLatch = new CountDownLatch(1);
-      RestUtils.getInstance().get(ipPort,
+      restUtils.get(ipPort,
           String.format(Const.REGISTRY_API.MICROSERVICE_INSTANCE_OPERATION_ONE, serviceId, instanceId),
           new RequestParam().addHeader("X-ConsumerId", serviceId).addQueryParam("global", "true"),
           syncHandler(countDownLatch, MicroserviceInstanceResponse.class, holder));
@@ -887,7 +896,7 @@ public final class ServiceRegistryClientImpl implements ServiceRegistryClient {
     IpPort ipPort = ipPortManager.getAvailableAddress();
 
     CountDownLatch countDownLatch = new CountDownLatch(1);
-    RestUtils.getInstance().get(ipPort,
+    restUtils.get(ipPort,
         Const.REGISTRY_API.SERVICECENTER_VERSION,
         new RequestParam(),
         syncHandler(countDownLatch, ServiceCenterInfo.class, holder));
