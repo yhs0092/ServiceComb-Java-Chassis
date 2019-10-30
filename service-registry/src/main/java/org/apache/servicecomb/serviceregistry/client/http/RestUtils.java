@@ -22,12 +22,13 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.ServiceLoader;
 
 import org.apache.servicecomb.foundation.auth.AuthHeaderProvider;
 import org.apache.servicecomb.foundation.auth.SignRequest;
 import org.apache.servicecomb.foundation.common.net.IpPort;
+import org.apache.servicecomb.foundation.common.utils.SPIServiceUtils;
 import org.apache.servicecomb.foundation.vertx.client.http.HttpClientWithContext;
 import org.apache.servicecomb.serviceregistry.config.ServiceRegistryConfig;
 import org.slf4j.Logger;
@@ -40,6 +41,14 @@ import io.vertx.core.http.CaseInsensitiveHeaders;
 import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpMethod;
 
+/**
+ * The registry data access class.
+ * <p/>
+ * TODO: should be refactored.
+ * This is not a good design. When we use this class, our actual intention is to get access to the registry data.
+ * Therefore, this class is stateful, and it's not a typical "util".
+ * This class should be refactored later and used as a registry data related context class.
+ */
 final class RestUtils {
   private static final Logger LOGGER = LoggerFactory.getLogger(RestUtils.class);
 
@@ -49,12 +58,26 @@ final class RestUtils {
 
   private static final String HEADER_TENANT_NAME = "x-domain-name";
 
-  private static final ServiceLoader<AuthHeaderProvider> authHeaderProviders =
-      ServiceLoader.load(AuthHeaderProvider.class);
+  private static final List<AuthHeaderProvider> AUTH_HEADER_PROVIDERS =
+      SPIServiceUtils.getAllService(AuthHeaderProvider.class);
 
   private static final RestUtils INSTANCE = new RestUtils();
 
-  RestUtils() {
+  private HttpClientPool httpClientPool;
+
+  private List<AuthHeaderProvider> authHeaderProviders;
+
+  private RestUtils() {
+    this(HttpClientPool.INSTANCE, AUTH_HEADER_PROVIDERS);
+  }
+
+  public RestUtils(HttpClientPool httpClientPool) {
+    this(httpClientPool, AUTH_HEADER_PROVIDERS);
+  }
+
+  public RestUtils(HttpClientPool httpClientPool, List<AuthHeaderProvider> authHeaderProviders) {
+    this.httpClientPool = httpClientPool;
+    this.authHeaderProviders = authHeaderProviders;
   }
 
   public static RestUtils getInstance() {
@@ -70,7 +93,7 @@ final class RestUtils {
   }
 
   public void httpDo(long timeout, RequestContext requestContext, Handler<RestResponse> responseHandler) {
-    HttpClientWithContext vertxHttpClient = HttpClientPool.INSTANCE.getClient();
+    HttpClientWithContext vertxHttpClient = httpClientPool.getClient();
     vertxHttpClient.runOnContext(httpClient -> {
       IpPort ipPort = requestContext.getIpPort();
       HttpMethod httpMethod = requestContext.getMethod();
