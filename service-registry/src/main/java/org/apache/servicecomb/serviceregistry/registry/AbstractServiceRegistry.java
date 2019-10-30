@@ -64,6 +64,8 @@ import com.google.common.eventbus.EventBus;
 public abstract class AbstractServiceRegistry implements ServiceRegistry {
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractServiceRegistry.class);
 
+  private static final String REVISION_CACHE_NOT_EXIST = "";
+
   private String name;
 
   private Features features = new Features();
@@ -127,9 +129,22 @@ public abstract class AbstractServiceRegistry implements ServiceRegistry {
         .build(new CacheLoader<String, String>() {
           @Override
           public String load(String key) {
-            return null;
+            return REVISION_CACHE_NOT_EXIST;
           }
         });
+  }
+
+  private String getCachedRevision(String revisionKey) {
+    String revisionId = null;
+    try {
+      revisionId = revisionCache.get(revisionKey);
+      if (REVISION_CACHE_NOT_EXIST.equals(revisionId)) {
+        revisionId = null;
+      }
+    } catch (ExecutionException e) {
+      // ignore this exception
+    }
+    return revisionId;
   }
 
   protected void initAppManager() throws InstantiationException, IllegalAccessException, ClassNotFoundException {
@@ -265,12 +280,7 @@ public abstract class AbstractServiceRegistry implements ServiceRegistry {
   @Override
   public MicroserviceInstances findServiceInstances(String appId, String serviceName, String versionRule) {
     final String revisionKey = generateRevisionKey(appId, serviceName, versionRule);
-    String revisionId = null;
-    try {
-      revisionId = revisionCache.get(revisionKey);
-    } catch (ExecutionException e) {
-      // ignore this exception
-    }
+    String revisionId = getCachedRevision(revisionKey);
     return findServiceInstances(appId, serviceName, versionRule, revisionId);
   }
 
