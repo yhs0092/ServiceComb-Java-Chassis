@@ -32,8 +32,9 @@ public class RestUtilsTest {
   @Test
   public void defaultHeadersContainServiceRegistryAndAuthentication() throws Exception {
 
-    MultiMap headers = RestUtils.getDefaultHeaders();
-    headers.addAll(RestUtils.getSignAuthHeaders(RestUtils.createSignRequest(HttpMethod.GET.toString(),
+    MultiMap headers = RestUtils.getInstance().getDefaultHeaders();
+    headers.addAll(
+        RestUtils.getInstance().getSignAuthHeaders(RestUtils.getInstance().createSignRequest(HttpMethod.GET.toString(),
         new IpPort("127.0.0.1", 443),
         new RequestParam().addQueryParam("testParam", "test"),
         "test",

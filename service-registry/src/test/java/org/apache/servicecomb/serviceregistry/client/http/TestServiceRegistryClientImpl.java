@@ -486,7 +486,8 @@ public class TestServiceRegistryClientImpl {
           Handler<RestResponse> responseHandler) {
         Assert.assertEquals("appId=appId&global=true&serviceName=serviceName&version=0.0.0%2B",
             requestParam.getQueryParams());
-        httpDo(RestUtils.createRequestContext(HttpMethod.GET, ipPort, uri, requestParam), responseHandler);
+        httpDo(RestUtils.getInstance().createRequestContext(HttpMethod.GET, ipPort, uri, requestParam),
+            responseHandler);
       }
 
       @Mock

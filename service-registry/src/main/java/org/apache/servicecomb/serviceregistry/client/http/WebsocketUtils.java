@@ -45,8 +45,9 @@ public final class WebsocketUtils {
       client.websocket(ipPort.getPort(),
           ipPort.getHostOrIp(),
           url,
-          RestUtils.getDefaultHeaders().addAll(RestUtils.getSignAuthHeaders(
-              RestUtils.createSignRequest(HttpMethod.GET.name(), ipPort, new RequestParam(), url, new HashMap<>()))),
+          RestUtils.getInstance().getDefaultHeaders().addAll(RestUtils.getInstance().getSignAuthHeaders(
+              RestUtils.getInstance()
+                  .createSignRequest(HttpMethod.GET.name(), ipPort, new RequestParam(), url, new HashMap<>()))),
           ws -> {
             onOpen.handle(null);
 
