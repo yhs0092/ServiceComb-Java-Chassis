@@ -332,6 +332,7 @@ public final class RegistryUtils {
    */
   public static void addExtraServiceRegistry(ServiceRegistry serviceRegistry) {
     Objects.requireNonNull(serviceRegistry);
+    LOGGER.info("extra ServiceRegistry added: [{}]", serviceRegistry.name());
     if (StringUtils.isEmpty(serviceRegistry.name())) {
       throw new IllegalArgumentException("The name of ServiceRegistry is empty");
     }
@@ -393,7 +394,6 @@ public final class RegistryUtils {
     EXTRA_SERVICE_REGISTRY_CONFIGS.values().forEach(config -> {
           ServiceRegistry extraServiceRegistry =
               ServiceRegistryFactory.create(EventManager.getEventBus(), config, defaultMicroserviceDefinition);
-          LOGGER.info("extra ServiceRegistry added: [{}]", extraServiceRegistry.name());
           addExtraServiceRegistry(extraServiceRegistry);
         }
     );
