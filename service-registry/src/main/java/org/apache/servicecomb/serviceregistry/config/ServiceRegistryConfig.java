@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.apache.servicecomb.deployment.Deployment;
 import org.apache.servicecomb.deployment.DeploymentProvider;
+import org.apache.servicecomb.foundation.auth.AuthHeaderProvider;
 import org.apache.servicecomb.foundation.common.net.IpPort;
 import org.apache.servicecomb.foundation.common.net.NetUtils;
 import org.apache.servicecomb.serviceregistry.ServiceRegistry;
@@ -34,6 +35,7 @@ import com.netflix.config.DynamicIntProperty;
 import com.netflix.config.DynamicPropertyFactory;
 import com.netflix.config.DynamicStringProperty;
 
+import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpVersion;
 
 /**
@@ -103,6 +105,10 @@ public final class ServiceRegistryConfig {
   private String registryName = ServiceRegistry.DEFAULT_SERVICE_REGISTRY;
 
   private ArrayList<IpPort> ipPorts;
+
+  private HttpClientOptions registryClientOptions;
+
+  private AuthHeaderProvider authHeaderProvider;
 
   public ServiceRegistryConfig() {
   }
@@ -363,6 +369,25 @@ public final class ServiceRegistryConfig {
 
   public ServiceRegistryConfig setRegistryName(String registryName) {
     this.registryName = registryName;
+    return this;
+  }
+
+  public HttpClientOptions getRegistryClientOptions() {
+    return registryClientOptions;
+  }
+
+  public ServiceRegistryConfig setRegistryClientOptions(HttpClientOptions registryClientOptions) {
+    this.registryClientOptions = registryClientOptions;
+    return this;
+  }
+
+  public AuthHeaderProvider getAuthHeaderProvider() {
+    return authHeaderProvider;
+  }
+
+  public ServiceRegistryConfig setAuthHeaderProvider(
+      AuthHeaderProvider authHeaderProvider) {
+    this.authHeaderProvider = authHeaderProvider;
     return this;
   }
 }

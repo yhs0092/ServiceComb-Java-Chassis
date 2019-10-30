@@ -69,6 +69,15 @@ public class RemoteServiceRegistry extends AbstractServiceRegistry {
 
   @Override
   protected ServiceRegistryClient createServiceRegistryClient() {
+//    if (null == serviceRegistryConfig.getRegistryClientOptions()) {
+//      return new ServiceRegistryClientImpl(ipPortManager);
+//    }
+//    RestUtils restUtils = null == serviceRegistryConfig.getAuthHeaderProvider() ?
+//        new RestUtils(new HttpClientPool(serviceRegistryConfig.getRegistryClientOptions()))
+//        : new RestUtils(new HttpClientPool(serviceRegistryConfig.getRegistryClientOptions()),
+//            Collections.singletonList(serviceRegistryConfig.getAuthHeaderProvider()));
+//    new WebsocketUtils()
+//    return new ServiceRegistryClientImpl(ipPortManager, restUtils);
     return new ServiceRegistryClientImpl(ipPortManager);
   }
 
