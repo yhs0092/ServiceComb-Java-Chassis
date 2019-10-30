@@ -39,6 +39,10 @@ public final class HttpClientPool extends AbstractClientPool {
   private HttpClientPool() {
   }
 
+  public HttpClientPool(HttpClientOptions httpClientOptions) {
+    super(httpClientOptions);
+  }
+
   @Override
   protected boolean isWorker() {
     return false;
