@@ -90,13 +90,16 @@ public final class ServiceRegistryClientImpl implements ServiceRegistryClient {
 
   private RestUtils restUtils;
 
+  private WebsocketUtils websocketUtils;
+
   public ServiceRegistryClientImpl(IpPortManager ipPortManager) {
-    this(ipPortManager, RestUtils.getInstance());
+    this(ipPortManager, RestUtils.getInstance(), WebsocketUtils.getInstance());
   }
 
-  public ServiceRegistryClientImpl(IpPortManager ipPortManager, RestUtils restUtils) {
+  public ServiceRegistryClientImpl(IpPortManager ipPortManager, RestUtils restUtils, WebsocketUtils websocketUtils) {
     this.ipPortManager = ipPortManager;
     this.restUtils = restUtils;
+    this.websocketUtils = websocketUtils;
   }
 
   private LoadingCache<String, Map<String, String>> schemaCache = CacheBuilder.newBuilder()
@@ -685,7 +688,7 @@ public final class ServiceRegistryClientImpl implements ServiceRegistryClient {
           String url = String.format(Const.REGISTRY_API.MICROSERVICE_WATCH, selfMicroserviceId);
 
           IpPort ipPort = ipPortManager.getAvailableAddress();
-          WebsocketUtils.getInstance().open(ipPort, url, o -> {
+          websocketUtils.open(ipPort, url, o -> {
             onOpen.success(o);
             LOGGER.info(
                 "watching microservice {} successfully, "
