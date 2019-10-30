@@ -37,6 +37,10 @@ public final class WebsocketClientPool extends AbstractClientPool {
   private WebsocketClientPool() {
   }
 
+  public WebsocketClientPool(HttpClientOptions httpClientOptions) {
+    super(httpClientOptions);
+  }
+
   @Override
   protected boolean isWorker() {
     return true;
