@@ -36,7 +36,21 @@ public final class WebsocketUtils {
 
   private static final WebsocketUtils INSTANCE = new WebsocketUtils();
 
+  private WebsocketClientPool websocketClientPool;
+
+  private RestUtils restUtils;
+
   WebsocketUtils() {
+    this(WebsocketClientPool.INSTANCE);
+  }
+
+  public WebsocketUtils(WebsocketClientPool websocketClientPool) {
+    this(websocketClientPool, RestUtils.getInstance());
+  }
+
+  public WebsocketUtils(WebsocketClientPool websocketClientPool, RestUtils restUtils) {
+    this.websocketClientPool = websocketClientPool;
+    this.restUtils = restUtils;
   }
 
   public static WebsocketUtils getInstance() {
@@ -46,14 +60,13 @@ public final class WebsocketUtils {
   public void open(IpPort ipPort, String url, Handler<Void> onOpen, Handler<Void> onClose,
       Handler<Buffer> onMessage, Handler<Throwable> onException,
       Handler<Throwable> onConnectFailed) {
-    HttpClientWithContext vertxHttpClient = WebsocketClientPool.INSTANCE.getClient();
+    HttpClientWithContext vertxHttpClient = websocketClientPool.getClient();
     vertxHttpClient.runOnContext(client -> {
       client.websocket(ipPort.getPort(),
           ipPort.getHostOrIp(),
           url,
-          RestUtils.getInstance().getDefaultHeaders().addAll(RestUtils.getInstance().getSignAuthHeaders(
-              RestUtils.getInstance()
-                  .createSignRequest(HttpMethod.GET.name(), ipPort, new RequestParam(), url, new HashMap<>()))),
+          restUtils.getDefaultHeaders().addAll(restUtils.getSignAuthHeaders(
+              restUtils.createSignRequest(HttpMethod.GET.name(), ipPort, new RequestParam(), url, new HashMap<>()))),
           ws -> {
             onOpen.handle(null);
 

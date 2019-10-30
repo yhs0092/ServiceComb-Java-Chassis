@@ -97,7 +97,7 @@ public final class VertxUtils {
   public static <VERTICLE extends Verticle> boolean blockDeploy(Vertx vertx,
       Class<VERTICLE> cls,
       DeploymentOptions options) throws InterruptedException {
-    Holder<Boolean> result = new Holder<>();
+    Holder<Boolean> result = new Holder<>(Boolean.FALSE);
 
     CountDownLatch latch = new CountDownLatch(1);
     vertx.deployVerticle(cls.getName(), options, ar -> {
