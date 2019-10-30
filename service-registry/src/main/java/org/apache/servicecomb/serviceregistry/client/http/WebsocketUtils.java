@@ -34,10 +34,16 @@ import io.vertx.core.http.HttpMethod;
 public final class WebsocketUtils {
   private static final Logger LOGGER = LoggerFactory.getLogger(WebsocketUtils.class);
 
-  private WebsocketUtils() {
+  private static final WebsocketUtils INSTANCE = new WebsocketUtils();
+
+  WebsocketUtils() {
   }
 
-  public static void open(IpPort ipPort, String url, Handler<Void> onOpen, Handler<Void> onClose,
+  public static WebsocketUtils getInstance() {
+    return INSTANCE;
+  }
+
+  public void open(IpPort ipPort, String url, Handler<Void> onOpen, Handler<Void> onClose,
       Handler<Buffer> onMessage, Handler<Throwable> onException,
       Handler<Throwable> onConnectFailed) {
     HttpClientWithContext vertxHttpClient = WebsocketClientPool.INSTANCE.getClient();

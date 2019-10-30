@@ -676,7 +676,7 @@ public final class ServiceRegistryClientImpl implements ServiceRegistryClient {
           String url = String.format(Const.REGISTRY_API.MICROSERVICE_WATCH, selfMicroserviceId);
 
           IpPort ipPort = ipPortManager.getAvailableAddress();
-          WebsocketUtils.open(ipPort, url, o -> {
+          WebsocketUtils.getInstance().open(ipPort, url, o -> {
             onOpen.success(o);
             LOGGER.info(
                 "watching microservice {} successfully, "
