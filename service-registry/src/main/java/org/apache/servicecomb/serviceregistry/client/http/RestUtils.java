@@ -49,7 +49,7 @@ import io.vertx.core.http.HttpMethod;
  * Therefore, this class is stateful, and it's not a typical "util".
  * This class should be refactored later and used as a registry data related context class.
  */
-final class RestUtils {
+public final class RestUtils {
   private static final Logger LOGGER = LoggerFactory.getLogger(RestUtils.class);
 
   private static final String HEADER_CONTENT_TYPE = "Content-Type";
