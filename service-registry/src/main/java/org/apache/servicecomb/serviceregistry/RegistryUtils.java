@@ -378,7 +378,7 @@ public final class RegistryUtils {
    * The {@code action} is applied to all of the ServiceRegistry instances
    * including the default one {@link #serviceRegistry} and all in the {@link #EXTRA_SERVICE_REGISTRIES}
    */
-  private static void executeOnEachServiceRegistry(Consumer<ServiceRegistry> action) {
+  public static void executeOnEachServiceRegistry(Consumer<ServiceRegistry> action) {
     if (null != serviceRegistry) {
       action.accept(serviceRegistry);
     }
