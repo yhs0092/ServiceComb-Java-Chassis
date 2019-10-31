@@ -16,13 +16,18 @@
  */
 package org.apache.servicecomb.serviceregistry.registry;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.servicecomb.foundation.common.utils.SPIServiceUtils;
 import org.apache.servicecomb.serviceregistry.client.ServiceRegistryClient;
+import org.apache.servicecomb.serviceregistry.client.http.HttpClientPool;
+import org.apache.servicecomb.serviceregistry.client.http.RestUtils;
 import org.apache.servicecomb.serviceregistry.client.http.ServiceRegistryClientImpl;
+import org.apache.servicecomb.serviceregistry.client.http.WebsocketClientPool;
+import org.apache.servicecomb.serviceregistry.client.http.WebsocketUtils;
 import org.apache.servicecomb.serviceregistry.config.ServiceRegistryConfig;
 import org.apache.servicecomb.serviceregistry.definition.MicroserviceDefinition;
 import org.apache.servicecomb.serviceregistry.task.HeartbeatResult;
@@ -35,6 +40,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
+
+import io.vertx.core.http.HttpClientOptions;
 
 public class RemoteServiceRegistry extends AbstractServiceRegistry {
   private static final Logger LOGGER = LoggerFactory.getLogger(RemoteServiceRegistry.class);
@@ -69,16 +76,16 @@ public class RemoteServiceRegistry extends AbstractServiceRegistry {
 
   @Override
   protected ServiceRegistryClient createServiceRegistryClient() {
-//    if (null == serviceRegistryConfig.getRegistryClientOptions()) {
-//      return new ServiceRegistryClientImpl(ipPortManager);
-//    }
-//    RestUtils restUtils = null == serviceRegistryConfig.getAuthHeaderProvider() ?
-//        new RestUtils(new HttpClientPool(serviceRegistryConfig.getRegistryClientOptions()))
-//        : new RestUtils(new HttpClientPool(serviceRegistryConfig.getRegistryClientOptions()),
-//            Collections.singletonList(serviceRegistryConfig.getAuthHeaderProvider()));
-//    new WebsocketUtils()
-//    return new ServiceRegistryClientImpl(ipPortManager, restUtils);
-    return new ServiceRegistryClientImpl(ipPortManager);
+    final HttpClientOptions registryClientOptions = serviceRegistryConfig.getRegistryClientOptions();
+    if (null == registryClientOptions) {
+      return new ServiceRegistryClientImpl(ipPortManager);
+    }
+    RestUtils restUtils = null == serviceRegistryConfig.getAuthHeaderProvider() ?
+        new RestUtils(new HttpClientPool(registryClientOptions))
+        : new RestUtils(new HttpClientPool(registryClientOptions),
+            Collections.singletonList(serviceRegistryConfig.getAuthHeaderProvider()));
+    WebsocketUtils websocketUtils = new WebsocketUtils(new WebsocketClientPool(registryClientOptions), restUtils);
+    return new ServiceRegistryClientImpl(ipPortManager, restUtils, websocketUtils);
   }
 
   @Subscribe
