@@ -20,6 +20,7 @@ package org.apache.servicecomb.core.provider.producer;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
@@ -77,13 +78,16 @@ public class ProducerProviderManager implements BootListener {
       }
     }
 
+    final HashMap<String, String> schemaMap = new HashMap<>();
     microserviceMeta = SCBEngine.getInstance().getProducerMicroserviceMeta();
     for (SchemaMeta schemaMeta : microserviceMeta.getSchemaMetas()) {
       Swagger swagger = schemaMeta.getSwagger();
       swagger.addScheme(Scheme.forValue(swaggerSchema));
       String content = SchemaUtils.swaggerToString(swagger);
-      microservice.addSchema(schemaMeta.getSchemaId(), content);
+      schemaMap.put(schemaMeta.getSchemaId(), content);
     }
+    RegistryUtils.executeOnEachServiceRegistry(registry ->
+        schemaMap.forEach((schemaId, content) -> registry.getMicroservice().addSchema(schemaId, content)));
   }
 
   private void onClose() {
