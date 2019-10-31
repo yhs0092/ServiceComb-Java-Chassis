@@ -22,7 +22,6 @@ import org.apache.servicecomb.core.definition.SchemaMeta;
 import org.apache.servicecomb.core.definition.SchemaUtils;
 import org.apache.servicecomb.serviceregistry.RegistryUtils;
 import org.apache.servicecomb.serviceregistry.api.registry.Microservice;
-import org.apache.servicecomb.serviceregistry.client.ServiceRegistryClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -68,8 +67,8 @@ public class ConsumerSchemaFactory extends AbstractSchemaFactory<ConsumerSchemaC
       return swagger;
     }
 
-    ServiceRegistryClient client = RegistryUtils.getServiceRegistryClient();
-    String schemaContent = client.getAggregatedSchema(context.getMicroservice().getServiceId(), context.getSchemaId());
+    String schemaContent = RegistryUtils
+        .getAggregatedSchema(context.getMicroservice().getServiceId(), context.getSchemaId());
     LOGGER.info("load schema from service center, microservice={}:{}:{}, schemaId={}, result={}",
         context.getMicroservice().getAppId(),
         context.getMicroservice().getServiceName(),

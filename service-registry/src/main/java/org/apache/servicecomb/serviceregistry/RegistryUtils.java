@@ -274,6 +274,16 @@ public final class RegistryUtils {
     return result.getValue();
   }
 
+  public static String getAggregatedSchema(String microserviceId, String schemaId) {
+    Holder<String> result = new Holder<>();
+    executeOnEachServiceRegistry(registry -> {
+      if (StringUtils.isEmpty(result.getValue())) {
+        result.setValue(registry.getServiceRegistryClient().getAggregatedSchema(microserviceId, schemaId));
+      }
+    });
+    return result.getValue();
+  }
+
   /**
    * Consider using {@link #findServiceInstances(String, String, String)} instead.
    */
