@@ -76,7 +76,7 @@ public final class ServiceRegistryConfig {
 
   public static final String MICROSERVICE_VERSION_FACTORY = "servicecomb.microserviceVersionFactory";
 
-  private boolean ssl = true;
+  private boolean ssl = false;
 
   public static final String PROXY_PRE_NAME = "servicecomb.proxy.";
 
@@ -144,11 +144,6 @@ public final class ServiceRegistryConfig {
       return nAvailableProcessors;
     }
     return deployInstances;
-  }
-
-  public ServiceRegistryConfig setSsl(boolean ssl) {
-    this.ssl = ssl;
-    return this;
   }
 
   public boolean isSsl() {
@@ -378,6 +373,7 @@ public final class ServiceRegistryConfig {
 
   public ServiceRegistryConfig setRegistryClientOptions(HttpClientOptions registryClientOptions) {
     this.registryClientOptions = registryClientOptions;
+    this.ssl = registryClientOptions.isSsl();
     return this;
   }
 
