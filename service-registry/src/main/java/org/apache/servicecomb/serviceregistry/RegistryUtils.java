@@ -258,7 +258,7 @@ public final class RegistryUtils {
     Holder<Microservice> result = new Holder<>();
     executeOnEachServiceRegistry(registry -> {
       if (null == result.getValue()) {
-        result.setValue(serviceRegistry.getRemoteMicroservice(microserviceId));
+        result.setValue(registry.getRemoteMicroservice(microserviceId));
       }
     });
     return result.getValue();
