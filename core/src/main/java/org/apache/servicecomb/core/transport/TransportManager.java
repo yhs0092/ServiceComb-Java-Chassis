@@ -30,7 +30,6 @@ import org.apache.servicecomb.core.Endpoint;
 import org.apache.servicecomb.core.Transport;
 import org.apache.servicecomb.foundation.common.exceptions.ServiceCombException;
 import org.apache.servicecomb.serviceregistry.RegistryUtils;
-import org.apache.servicecomb.serviceregistry.api.registry.Microservice;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -56,8 +55,8 @@ public class TransportManager {
         Endpoint endpoint = transport.getPublishEndpoint();
         if (endpoint != null && endpoint.getEndpoint() != null) {
           LOGGER.info("endpoint to publish: {}", endpoint.getEndpoint());
-          Microservice microservice = RegistryUtils.getMicroservice();
-          microservice.getInstance().getEndpoints().add(endpoint.getEndpoint());
+          RegistryUtils.executeOnEachServiceRegistry(
+              serviceRegistry -> serviceRegistry.getMicroserviceInstance().getEndpoints().add(endpoint.getEndpoint()));
         }
         continue;
       }

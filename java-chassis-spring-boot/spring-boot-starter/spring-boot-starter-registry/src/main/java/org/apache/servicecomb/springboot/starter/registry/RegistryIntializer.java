@@ -37,7 +37,9 @@ public class RegistryIntializer {
     if (null != address) {
       try {
         RegistryUtils.init();
-        RegistryUtils.getMicroserviceInstance().getEndpoints().add(RegistryUtils.getPublishAddress("rest", address));
+        final String publishAddress = RegistryUtils.getPublishAddress("rest", address);
+        RegistryUtils.executeOnEachServiceRegistry(
+            serviceRegistry -> serviceRegistry.getMicroserviceInstance().getEndpoints().add(publishAddress));
         RegistryUtils.run();
       } catch (Exception e) {
         LOG.error("init registry error.", e);
