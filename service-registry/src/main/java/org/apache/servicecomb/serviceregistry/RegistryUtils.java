@@ -330,6 +330,7 @@ public final class RegistryUtils {
 
     result.setInstancesResponse(new FindInstancesResponse());
     result.getInstancesResponse().setInstances(finalInstanceList);
+    result.setRevision(resultList.get(0).getRevision());
     return result;
   }
 
