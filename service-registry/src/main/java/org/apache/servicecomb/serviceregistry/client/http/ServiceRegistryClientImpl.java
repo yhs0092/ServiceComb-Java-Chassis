@@ -92,6 +92,8 @@ public final class ServiceRegistryClientImpl implements ServiceRegistryClient {
 
   private WebsocketUtils websocketUtils;
 
+  private LogStatusController controller = new LogStatusController();
+
   public ServiceRegistryClientImpl(IpPortManager ipPortManager) {
     this(ipPortManager, RestUtils.getInstance(), WebsocketUtils.getInstance());
   }
@@ -259,9 +261,11 @@ public final class ServiceRegistryClientImpl implements ServiceRegistryClient {
               mInstances.setRevision(response.getHeader("X-Resource-Revision"));
               switch (response.statusCode()) {
                 case 304:
+                  controller.markSuccess();
                   mInstances.setNeedRefresh(false);
                   break;
                 case 200:
+                  controller.markSuccess();
                   mInstances
                       .setInstancesResponse(JsonUtils.readValue(bodyBuffer.getBytes(), FindInstancesResponse.class));
                   break;
@@ -272,7 +276,9 @@ public final class ServiceRegistryClientImpl implements ServiceRegistryClient {
                     mInstances.setMicroserviceNotExist(true);
                     mInstances.setNeedRefresh(false);
                   }
-                  LOGGER.warn("failed to findInstances: " + bodyBuffer.toString());
+                  if (controller.markFailure()) {
+                    LOGGER.warn("failed to findInstances: " + bodyBuffer.toString());
+                  }
                 }
                 break;
                 default:
@@ -912,5 +918,146 @@ public final class ServiceRegistryClientImpl implements ServiceRegistryClient {
       LOGGER.error("query servicecenter version info failed.", e);
     }
     return null;
+  }
+
+  private static class LogStatusController {
+    public static final long ALLOW_ERROR_LOG_PERIOD = TimeUnit.MINUTES.toMillis(2);
+
+    public static final long BAN_ERROR_LOG_PERIOD_LONG = TimeUnit.HOURS.toMillis(1);
+
+    public static final long BAN_ERROR_LOG_PERIOD_SHORT = TimeUnit.MINUTES.toMillis(15);
+
+    private ClientConnectionStatus status = ClientConnectionStatus.NORMAL;
+
+    private int consecutiveFailure;
+
+    private long nextShiftTime;
+
+    private int errorStatusShiftCount;
+
+    void markSuccess() {
+      status.markSuccess(this);
+    }
+
+    boolean markFailure() {
+      return status.markFailure(this);
+    }
+
+    public ClientConnectionStatus getStatus() {
+      return status;
+    }
+
+    public void setStatus(ClientConnectionStatus status) {
+      status.intoThisStatus(this);
+      this.status = status;
+    }
+
+    public int getConsecutiveFailure() {
+      return consecutiveFailure;
+    }
+
+    public void addConsecutiveFailure() {
+      this.consecutiveFailure++;
+    }
+
+    public void resetConsecutiveFailure() {
+      this.consecutiveFailure = 0;
+    }
+
+    public boolean reachShiftTime() {
+      return System.currentTimeMillis() > nextShiftTime;
+    }
+
+    public void setNextShiftTime(long nextShiftTime) {
+      this.nextShiftTime = nextShiftTime;
+    }
+
+    public int getErrorStatusShiftCount() {
+      return errorStatusShiftCount;
+    }
+
+    public void addErrorStatusShiftCount() {
+      this.errorStatusShiftCount++;
+    }
+
+    public void resetErrorStatusShiftCount() {
+      this.errorStatusShiftCount = 0;
+    }
+  }
+
+  private enum ClientConnectionStatus {
+    NORMAL {
+      @Override
+      public void intoThisStatus(LogStatusController controller) {
+        controller.resetConsecutiveFailure();
+        controller.resetErrorStatusShiftCount();
+      }
+
+      @Override
+      public void markSuccess(LogStatusController controller) {
+      }
+
+      @Override
+      public boolean markFailure(LogStatusController controller) {
+        controller.addConsecutiveFailure();
+        if (controller.getConsecutiveFailure() < 10) {
+          return true;
+        }
+        controller.setStatus(BAN_ERROR_LOG);
+        return false;
+      }
+    },
+    BAN_ERROR_LOG {
+      @Override
+      public void intoThisStatus(LogStatusController controller) {
+        controller.addErrorStatusShiftCount();
+        if (controller.getErrorStatusShiftCount() < 5) {
+          controller.setNextShiftTime(System.currentTimeMillis() + LogStatusController.BAN_ERROR_LOG_PERIOD_SHORT);
+        } else {
+          controller.setNextShiftTime(System.currentTimeMillis() + LogStatusController.BAN_ERROR_LOG_PERIOD_LONG);
+        }
+      }
+
+      @Override
+      public void markSuccess(LogStatusController controller) {
+        controller.setStatus(NORMAL);
+      }
+
+      @Override
+      public boolean markFailure(LogStatusController controller) {
+        if (controller.reachShiftTime()) {
+          controller.setStatus(ALLOW_ERROR_LOG);
+          return true;
+        }
+        return false;
+      }
+    },
+    ALLOW_ERROR_LOG {
+      @Override
+      public void intoThisStatus(LogStatusController controller) {
+        controller.addErrorStatusShiftCount();
+        controller.setNextShiftTime(System.currentTimeMillis() + LogStatusController.ALLOW_ERROR_LOG_PERIOD);
+      }
+
+      @Override
+      public void markSuccess(LogStatusController controller) {
+        controller.setStatus(NORMAL);
+      }
+
+      @Override
+      public boolean markFailure(LogStatusController controller) {
+        if (controller.reachShiftTime()) {
+          controller.setStatus(BAN_ERROR_LOG);
+          return false;
+        }
+        return true;
+      }
+    };
+
+    public abstract boolean markFailure(LogStatusController controller);
+
+    public abstract void markSuccess(LogStatusController controller);
+
+    public abstract void intoThisStatus(LogStatusController controller);
   }
 }
