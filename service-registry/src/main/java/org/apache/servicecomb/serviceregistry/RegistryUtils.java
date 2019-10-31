@@ -264,6 +264,16 @@ public final class RegistryUtils {
     return result.getValue();
   }
 
+  public static Microservice getAggregatedMicroservice(String microserviceId) {
+    Holder<Microservice> result = new Holder<>();
+    executeOnEachServiceRegistry(registry -> {
+      if (null == result.getValue()) {
+        result.setValue(registry.getAggregatedRemoteMicroservice(microserviceId));
+      }
+    });
+    return result.getValue();
+  }
+
   /**
    * Consider using {@link #findServiceInstances(String, String, String)} instead.
    */

@@ -34,8 +34,6 @@ public class TestServiceCenterRegistryConfiguration {
       {
         RegistryUtils.init();
         RegistryUtils.run();
-        RegistryUtils.getMicroserviceInstance();
-        result = microserviceInstance;
       }
     };
     System.setProperty("servicecomb.rest.address", "127.0.0.1:8081");

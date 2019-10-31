@@ -52,7 +52,7 @@ public class MicroserviceInstanceCache {
   public static Microservice getOrCreate(String serviceId) {
     try {
       return microservices.get(serviceId, () -> {
-        Microservice microservice = RegistryUtils.getServiceRegistryClient().getAggregatedMicroservice(serviceId);
+        Microservice microservice = RegistryUtils.getAggregatedMicroservice(serviceId);
         if (microservice == null) {
           throw new IllegalArgumentException("service id not exists.");
         }

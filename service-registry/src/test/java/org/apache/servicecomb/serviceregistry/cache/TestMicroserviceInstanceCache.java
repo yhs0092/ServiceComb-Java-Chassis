@@ -33,11 +33,9 @@ public class TestMicroserviceInstanceCache {
       @Mocked Microservice microservice) {
     new Expectations() {
       {
-        RegistryUtils.getServiceRegistryClient();
-        result = client;
-        client.getAggregatedMicroservice("forkedid");
+        RegistryUtils.getAggregatedMicroservice("forkedid");
         result = microservice;
-        client.getAggregatedMicroservice("forkedidNull");
+        RegistryUtils.getAggregatedMicroservice("forkedidNull");
         result = null;
       }
     };
