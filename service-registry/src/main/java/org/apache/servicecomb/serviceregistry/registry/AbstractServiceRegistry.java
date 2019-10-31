@@ -134,17 +134,21 @@ public abstract class AbstractServiceRegistry implements ServiceRegistry {
         });
   }
 
-  private String getCachedRevision(String revisionKey) {
+  private String getCachedRevision(String appId, String serviceName, String versionRule) {
     String revisionId = null;
     try {
-      revisionId = revisionCache.get(revisionKey);
+      revisionId = revisionCache.get(generateRevisionKey(appId, serviceName, versionRule));
       if (REVISION_CACHE_NOT_EXIST.equals(revisionId)) {
-        revisionId = null;
+        return null;
       }
     } catch (ExecutionException e) {
       // ignore this exception
     }
     return revisionId;
+  }
+
+  private void updateCachedRevision(String appId, String serviceName, String versionRule, String revision) {
+    revisionCache.put(generateRevisionKey(appId, serviceName, versionRule), revision);
   }
 
   protected void initAppManager() throws InstantiationException, IllegalAccessException, ClassNotFoundException {
@@ -279,8 +283,7 @@ public abstract class AbstractServiceRegistry implements ServiceRegistry {
 
   @Override
   public MicroserviceInstances findServiceInstances(String appId, String serviceName, String versionRule) {
-    final String revisionKey = generateRevisionKey(appId, serviceName, versionRule);
-    String revisionId = getCachedRevision(revisionKey);
+    String revisionId = getCachedRevision(appId, serviceName, versionRule);
     return findServiceInstances(appId, serviceName, versionRule, revisionId);
   }
 
@@ -319,6 +322,7 @@ public abstract class AbstractServiceRegistry implements ServiceRegistry {
         versionRule,
         revision,
         microserviceInstances.getRevision());
+    updateCachedRevision(appId, serviceName, versionRule, microserviceInstances.getRevision());
     for (MicroserviceInstance instance : instances) {
       LOGGER.info("service id={}, instance id={}, endpoints={}",
           instance.getServiceId(),
