@@ -379,8 +379,8 @@ public final class RegistryUtils {
    * including the default one {@link #serviceRegistry} and all in the {@link #EXTRA_SERVICE_REGISTRIES}
    */
   public static void executeOnEachServiceRegistry(Consumer<ServiceRegistry> action) {
-    if (null != serviceRegistry) {
-      action.accept(serviceRegistry);
+    if (null != getServiceRegistry()) {
+      action.accept(getServiceRegistry());
     }
     if (!EXTRA_SERVICE_REGISTRIES.isEmpty()) {
       EXTRA_SERVICE_REGISTRIES.values().forEach(action);
