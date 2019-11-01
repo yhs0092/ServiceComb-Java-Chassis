@@ -261,7 +261,6 @@ public final class ServiceRegistryClientImpl implements ServiceRegistryClient {
               mInstances.setRevision(response.getHeader("X-Resource-Revision"));
               switch (response.statusCode()) {
                 case 304:
-                  controller.markSuccess();
                   mInstances.setNeedRefresh(false);
                   break;
                 case 200:
