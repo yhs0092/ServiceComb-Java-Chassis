@@ -135,7 +135,7 @@ public class MicroserviceVersions {
   }
 
   public void pullInstances() {
-    if (pendingPullCount.decrementAndGet() != 0) {
+    if (pendingPullCount.decrementAndGet() > 0) {
       return;
     }
 
