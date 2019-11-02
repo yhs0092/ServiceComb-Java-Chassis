@@ -41,7 +41,7 @@ import io.vertx.core.http.HttpVersion;
 /**
  * Created by   on 2016/12/23.
  */
-public final class ServiceRegistryConfig {
+public class ServiceRegistryConfig {
   private static final Logger LOGGER = LoggerFactory.getLogger(ServiceRegistryConfig.class);
 
   public static final ServiceRegistryConfig INSTANCE = new ServiceRegistryConfig();
