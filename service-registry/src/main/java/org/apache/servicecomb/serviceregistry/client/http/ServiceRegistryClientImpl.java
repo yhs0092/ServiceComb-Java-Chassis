@@ -21,6 +21,7 @@ import static java.util.Collections.emptyList;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.time.Clock;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -919,7 +920,7 @@ public final class ServiceRegistryClientImpl implements ServiceRegistryClient {
     return null;
   }
 
-  private static class LogStatusController {
+  static class LogStatusController {
     public static final long ALLOW_ERROR_LOG_PERIOD = TimeUnit.MINUTES.toMillis(2);
 
     public static final long BAN_ERROR_LOG_PERIOD_LONG = TimeUnit.HOURS.toMillis(1);
@@ -933,6 +934,8 @@ public final class ServiceRegistryClientImpl implements ServiceRegistryClient {
     private long nextShiftTime;
 
     private int errorStatusShiftCount;
+
+    Clock clock = Clock.systemDefaultZone();
 
     void markSuccess() {
       status.markSuccess(this);
@@ -964,11 +967,20 @@ public final class ServiceRegistryClientImpl implements ServiceRegistryClient {
     }
 
     public boolean reachShiftTime() {
-      return System.currentTimeMillis() > nextShiftTime;
+      return clock.millis() > nextShiftTime;
     }
 
-    public void setNextShiftTime(long nextShiftTime) {
-      this.nextShiftTime = nextShiftTime;
+    public long getNextShiftTime() {
+      return nextShiftTime;
+    }
+
+    /**
+     * Set the next time to shift the {@link #status}.
+     *
+     * @param offsetMillis The offset milliseconds value from now to shift status.
+     */
+    public void setNextShiftTime(long offsetMillis) {
+      this.nextShiftTime = clock.millis() + offsetMillis;
     }
 
     public int getErrorStatusShiftCount() {
@@ -984,7 +996,7 @@ public final class ServiceRegistryClientImpl implements ServiceRegistryClient {
     }
   }
 
-  private enum ClientConnectionStatus {
+  enum ClientConnectionStatus {
     NORMAL {
       @Override
       public void intoThisStatus(LogStatusController controller) {
@@ -1011,9 +1023,9 @@ public final class ServiceRegistryClientImpl implements ServiceRegistryClient {
       public void intoThisStatus(LogStatusController controller) {
         controller.addErrorStatusShiftCount();
         if (controller.getErrorStatusShiftCount() < 5) {
-          controller.setNextShiftTime(System.currentTimeMillis() + LogStatusController.BAN_ERROR_LOG_PERIOD_SHORT);
+          controller.setNextShiftTime(LogStatusController.BAN_ERROR_LOG_PERIOD_SHORT);
         } else {
-          controller.setNextShiftTime(System.currentTimeMillis() + LogStatusController.BAN_ERROR_LOG_PERIOD_LONG);
+          controller.setNextShiftTime(LogStatusController.BAN_ERROR_LOG_PERIOD_LONG);
         }
       }
 
@@ -1035,7 +1047,7 @@ public final class ServiceRegistryClientImpl implements ServiceRegistryClient {
       @Override
       public void intoThisStatus(LogStatusController controller) {
         controller.addErrorStatusShiftCount();
-        controller.setNextShiftTime(System.currentTimeMillis() + LogStatusController.ALLOW_ERROR_LOG_PERIOD);
+        controller.setNextShiftTime(LogStatusController.ALLOW_ERROR_LOG_PERIOD);
       }
 
       @Override
