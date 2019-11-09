@@ -61,7 +61,6 @@ public final class RestCodec {
       try {
         paramValues[idx] = param.getParamProcessor().getValue(request);
       } catch (Exception e) {
-        e.printStackTrace();
         // Avoid information leak of user input.
         throw new InvocationException(Status.BAD_REQUEST,
             String.format("Parameter is not valid for operation [%s]. Parameter is [%s]. Processor is [%s].",
