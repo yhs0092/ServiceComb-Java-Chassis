@@ -108,7 +108,7 @@ public class TestServiceCombLoadBalancerStats {
   }
 
   @Test
-  public void testMiltiThread(@Injectable Transport transport) throws Exception {
+  public void testMultiThread(@Injectable Transport transport) throws Exception {
     long time = System.currentTimeMillis();
     MicroserviceInstance instance = new MicroserviceInstance();
     instance.setInstanceId("instance2");
