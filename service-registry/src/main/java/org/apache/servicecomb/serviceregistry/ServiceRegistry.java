@@ -26,7 +26,6 @@ import org.apache.servicecomb.serviceregistry.cache.InstanceCacheManager;
 import org.apache.servicecomb.serviceregistry.client.ServiceRegistryClient;
 import org.apache.servicecomb.serviceregistry.client.http.MicroserviceInstances;
 import org.apache.servicecomb.serviceregistry.consumer.AppManager;
-import org.apache.servicecomb.serviceregistry.swagger.SwaggerLoader;
 
 import com.google.common.eventbus.EventBus;
 
@@ -38,8 +37,6 @@ public interface ServiceRegistry {
   void destroy();
 
   EventBus getEventBus();
-
-  SwaggerLoader getSwaggerLoader();
 
   Set<String> getCombinedMicroserviceNames();
 

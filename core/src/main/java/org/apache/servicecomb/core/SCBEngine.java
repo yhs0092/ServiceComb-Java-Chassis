@@ -169,7 +169,7 @@ public class SCBEngine {
   }
 
   public SwaggerLoader getSwaggerLoader() {
-    return serviceRegistry.getSwaggerLoader();
+    return RegistryUtils.getSwaggerLoader();
   }
 
   public ConsumerHandlerManager getConsumerHandlerManager() {

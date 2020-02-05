@@ -48,7 +48,6 @@ import org.apache.servicecomb.serviceregistry.consumer.MicroserviceManager;
 import org.apache.servicecomb.serviceregistry.consumer.StaticMicroserviceVersions;
 import org.apache.servicecomb.serviceregistry.definition.MicroserviceDefinition;
 import org.apache.servicecomb.serviceregistry.definition.MicroserviceNameParser;
-import org.apache.servicecomb.serviceregistry.swagger.SwaggerLoader;
 import org.apache.servicecomb.serviceregistry.task.MicroserviceServiceCenterTask;
 import org.apache.servicecomb.serviceregistry.task.ServiceCenterTask;
 import org.apache.servicecomb.serviceregistry.task.event.RecoveryEvent;
@@ -86,8 +85,6 @@ public abstract class AbstractServiceRegistry implements ServiceRegistry {
 
   protected ServiceCenterTask serviceCenterTask;
 
-  protected SwaggerLoader swaggerLoader = new SwaggerLoader(this);
-
   protected ExecutorService executorService = MoreExecutors.newDirectExecutorService();
 
   public AbstractServiceRegistry(EventBus eventBus, ServiceRegistryConfig serviceRegistryConfig,
@@ -110,11 +107,6 @@ public abstract class AbstractServiceRegistry implements ServiceRegistry {
     createServiceCenterTask();
 
     eventBus.register(this);
-  }
-
-  @Override
-  public SwaggerLoader getSwaggerLoader() {
-    return swaggerLoader;
   }
 
   @Override

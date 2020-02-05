@@ -37,6 +37,7 @@ import org.apache.servicecomb.serviceregistry.client.http.MicroserviceInstances;
 import org.apache.servicecomb.serviceregistry.config.ServiceRegistryConfig;
 import org.apache.servicecomb.serviceregistry.definition.MicroserviceDefinition;
 import org.apache.servicecomb.serviceregistry.registry.ServiceRegistryFactory;
+import org.apache.servicecomb.serviceregistry.swagger.SwaggerLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,6 +54,8 @@ public final class RegistryUtils {
   public static final String PUBLISH_ADDRESS = "servicecomb.service.publishAddress";
 
   private static final String PUBLISH_PORT = "servicecomb.{transport_name}.publishPort";
+
+  private static final SwaggerLoader swaggerLoader = new SwaggerLoader();
 
   private RegistryUtils() {
   }
@@ -100,6 +103,10 @@ public final class RegistryUtils {
 
   public static InstanceCacheManager getInstanceCacheManager() {
     return serviceRegistry.getInstanceCacheManager();
+  }
+
+  public static SwaggerLoader getSwaggerLoader() {
+    return swaggerLoader;
   }
 
   public static String getAppId() {
@@ -233,5 +240,9 @@ public final class RegistryUtils {
 
   public static String calcSchemaSummary(String schemaContent) {
     return Hashing.sha256().newHasher().putString(schemaContent, Charsets.UTF_8).hash().toString();
+  }
+
+  public static String getAggregatedSchema(String microserviceId, String schemaId) {
+    return serviceRegistry.getServiceRegistryClient().getAggregatedSchema(microserviceId, schemaId);
   }
 }

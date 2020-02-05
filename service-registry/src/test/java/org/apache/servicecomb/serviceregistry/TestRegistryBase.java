@@ -70,7 +70,7 @@ public class TestRegistryBase {
     microserviceManager = appManager.getOrCreateMicroserviceManager(appId);
     eventBus = serviceRegistry.getEventBus();
 
-    serviceRegistry.getSwaggerLoader().registerSwagger(appId, serviceName, schemaId, Hello.class);
+    RegistryUtils.getSwaggerLoader().registerSwagger(appId, serviceName, schemaId, Hello.class);
 
     RegistryUtils.setServiceRegistry(serviceRegistry);
 
