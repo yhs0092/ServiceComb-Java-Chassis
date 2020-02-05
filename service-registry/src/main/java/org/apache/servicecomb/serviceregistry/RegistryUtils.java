@@ -245,4 +245,8 @@ public final class RegistryUtils {
   public static String getAggregatedSchema(String microserviceId, String schemaId) {
     return serviceRegistry.getServiceRegistryClient().getAggregatedSchema(microserviceId, schemaId);
   }
+
+  public static Microservice getAggregatedRemoteMicroservice(String microserviceId) {
+    return serviceRegistry.getAggregatedRemoteMicroservice(microserviceId);
+  }
 }

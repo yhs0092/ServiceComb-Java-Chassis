@@ -86,9 +86,9 @@ public class TestRegistryBase {
   protected void mockNotExist() {
     MicroserviceInstances microserviceInstances = new MicroserviceInstances();
     microserviceInstances.setMicroserviceNotExist(true);
-    new Expectations(appManager.getServiceRegistry()) {
+    new Expectations(RegistryUtils.getServiceRegistry()) {
       {
-        appManager.getServiceRegistry()
+        RegistryUtils.getServiceRegistry()
             .findServiceInstances(anyString, anyString, DefinitionConst.VERSION_RULE_ALL, anyString);
         result = microserviceInstances;
       }
@@ -96,9 +96,9 @@ public class TestRegistryBase {
   }
 
   protected void mockDisconnect() {
-    new Expectations(appManager.getServiceRegistry()) {
+    new Expectations(RegistryUtils.getServiceRegistry()) {
       {
-        appManager.getServiceRegistry()
+        RegistryUtils.getServiceRegistry()
             .findServiceInstances(anyString, anyString, DefinitionConst.VERSION_RULE_ALL, anyString);
         result = null;
       }

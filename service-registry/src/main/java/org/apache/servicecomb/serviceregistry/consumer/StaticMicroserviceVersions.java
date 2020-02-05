@@ -89,7 +89,7 @@ public class StaticMicroserviceVersions extends MicroserviceVersions {
   }
 
   private void createMicroservice(String version) {
-    String environment = appManager.getServiceRegistry().getMicroservice().getEnvironment();
+    String environment = RegistryUtils.getMicroservice().getEnvironment();
 
     microservice.setAppId(this.getAppId());
     microservice.setServiceName(this.getShortName());

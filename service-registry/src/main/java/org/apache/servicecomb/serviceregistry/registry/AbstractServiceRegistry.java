@@ -97,7 +97,7 @@ public abstract class AbstractServiceRegistry implements ServiceRegistry {
 
   @Override
   public void init() {
-    appManager = new AppManager(this);
+    appManager = new AppManager();
     instanceCacheManager = new InstanceCacheManagerNew(appManager);
     ipPortManager = new IpPortManager(serviceRegistryConfig, instanceCacheManager);
     if (srClient == null) {
