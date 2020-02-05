@@ -344,7 +344,7 @@ public class SCBEngine {
 
     bootListeners.sort(Comparator.comparingInt(BootListener::getOrder));
 
-    AbstractEndpointsCache.init(serviceRegistry.getInstanceCacheManager(), transportManager);
+    AbstractEndpointsCache.init(RegistryUtils.getInstanceCacheManager(), transportManager);
 
     triggerEvent(EventType.BEFORE_HANDLER);
     HandlerConfigUtils.init(consumerHandlerManager, producerHandlerManager);

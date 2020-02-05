@@ -32,6 +32,7 @@ import org.apache.servicecomb.foundation.common.net.NetUtils;
 import org.apache.servicecomb.serviceregistry.api.registry.Microservice;
 import org.apache.servicecomb.serviceregistry.api.registry.MicroserviceInstance;
 import org.apache.servicecomb.serviceregistry.cache.InstanceCacheManager;
+import org.apache.servicecomb.serviceregistry.cache.InstanceCacheManagerNew;
 import org.apache.servicecomb.serviceregistry.client.ServiceRegistryClient;
 import org.apache.servicecomb.serviceregistry.client.http.MicroserviceInstances;
 import org.apache.servicecomb.serviceregistry.config.ServiceRegistryConfig;
@@ -59,6 +60,8 @@ public final class RegistryUtils {
   private static SwaggerLoader swaggerLoader = new SwaggerLoader();
 
   private static AppManager appManager = new AppManager();
+
+  private static InstanceCacheManager instanceCacheManager = new InstanceCacheManagerNew(appManager);
 
   private RegistryUtils() {
   }
@@ -105,7 +108,7 @@ public final class RegistryUtils {
   }
 
   public static InstanceCacheManager getInstanceCacheManager() {
-    return serviceRegistry.getInstanceCacheManager();
+    return instanceCacheManager;
   }
 
   public static SwaggerLoader getSwaggerLoader() {

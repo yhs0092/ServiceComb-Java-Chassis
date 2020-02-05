@@ -38,8 +38,6 @@ import org.apache.servicecomb.serviceregistry.api.registry.Microservice;
 import org.apache.servicecomb.serviceregistry.api.registry.MicroserviceFactory;
 import org.apache.servicecomb.serviceregistry.api.registry.MicroserviceInstance;
 import org.apache.servicecomb.serviceregistry.api.response.MicroserviceInstanceChangedEvent;
-import org.apache.servicecomb.serviceregistry.cache.InstanceCacheManager;
-import org.apache.servicecomb.serviceregistry.cache.InstanceCacheManagerNew;
 import org.apache.servicecomb.serviceregistry.client.IpPortManager;
 import org.apache.servicecomb.serviceregistry.client.ServiceRegistryClient;
 import org.apache.servicecomb.serviceregistry.client.http.MicroserviceInstances;
@@ -73,8 +71,6 @@ public abstract class AbstractServiceRegistry implements ServiceRegistry {
 
   protected Microservice microservice;
 
-  protected InstanceCacheManager instanceCacheManager;
-
   protected IpPortManager ipPortManager;
 
   protected ServiceRegistryClient srClient;
@@ -95,8 +91,7 @@ public abstract class AbstractServiceRegistry implements ServiceRegistry {
 
   @Override
   public void init() {
-    instanceCacheManager = new InstanceCacheManagerNew(RegistryUtils.getAppManager());
-    ipPortManager = new IpPortManager(serviceRegistryConfig, instanceCacheManager);
+    ipPortManager = new IpPortManager(serviceRegistryConfig, RegistryUtils.getInstanceCacheManager());
     if (srClient == null) {
       srClient = createServiceRegistryClient();
     }
@@ -132,11 +127,6 @@ public abstract class AbstractServiceRegistry implements ServiceRegistry {
 
   public IpPortManager getIpPortManager() {
     return ipPortManager;
-  }
-
-  @Override
-  public InstanceCacheManager getInstanceCacheManager() {
-    return instanceCacheManager;
   }
 
   @Override

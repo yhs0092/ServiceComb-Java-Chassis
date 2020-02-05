@@ -174,7 +174,7 @@ public class TestLoadBalanceHandler2 {
     RegistryUtils.setServiceRegistry(serviceRegistry);
 
     when(serviceRegistry.getMicroserviceInstance()).thenReturn(myself);
-    when(serviceRegistry.getInstanceCacheManager()).thenReturn(instanceCacheManager);
+    mockUpInstanceCacheManager(instanceCacheManager);
     when(instanceCacheManager.getOrCreateVersionedCache("testApp", "testMicroserviceName", "0.0.0+"))
         .thenReturn(parent);
     when(transportManager.findTransport("rest")).thenReturn(transport);
@@ -287,7 +287,7 @@ public class TestLoadBalanceHandler2 {
     RegistryUtils.setServiceRegistry(serviceRegistry);
 
     when(serviceRegistry.getMicroserviceInstance()).thenReturn(myself);
-    when(serviceRegistry.getInstanceCacheManager()).thenReturn(instanceCacheManager);
+    mockUpInstanceCacheManager(instanceCacheManager);
     when(instanceCacheManager.getOrCreateVersionedCache("testApp", "testMicroserviceName", "0.0.0+"))
         .thenReturn(parent);
     when(transportManager.findTransport("rest")).thenReturn(transport);
@@ -404,7 +404,7 @@ public class TestLoadBalanceHandler2 {
     RegistryUtils.setServiceRegistry(serviceRegistry);
 
     when(serviceRegistry.getMicroserviceInstance()).thenReturn(myself);
-    when(serviceRegistry.getInstanceCacheManager()).thenReturn(instanceCacheManager);
+    mockUpInstanceCacheManager(instanceCacheManager);
     when(instanceCacheManager.getOrCreateVersionedCache("testApp", "testMicroserviceName", "0.0.0+"))
         .thenReturn(parent);
     when(transportManager.findTransport("rest")).thenReturn(transport);
@@ -531,7 +531,7 @@ public class TestLoadBalanceHandler2 {
     RegistryUtils.setServiceRegistry(serviceRegistry);
 
     when(serviceRegistry.getMicroserviceInstance()).thenReturn(myself);
-    when(serviceRegistry.getInstanceCacheManager()).thenReturn(instanceCacheManager);
+    mockUpInstanceCacheManager(instanceCacheManager);
     when(instanceCacheManager.getOrCreateVersionedCache("testApp", "testMicroserviceName", "0.0.0+"))
         .thenReturn(parent);
     when(transportManager.findTransport("rest")).thenReturn(transport);
@@ -675,7 +675,7 @@ public class TestLoadBalanceHandler2 {
     RegistryUtils.setServiceRegistry(serviceRegistry);
 
     when(serviceRegistry.getMicroserviceInstance()).thenReturn(myself);
-    when(serviceRegistry.getInstanceCacheManager()).thenReturn(instanceCacheManager);
+    mockUpInstanceCacheManager(instanceCacheManager);
     when(instanceCacheManager.getOrCreateVersionedCache("testApp", "testMicroserviceName", "0.0.0+"))
         .thenReturn(parent);
     when(transportManager.findTransport("rest")).thenReturn(transport);
@@ -794,7 +794,7 @@ public class TestLoadBalanceHandler2 {
     RegistryUtils.setServiceRegistry(serviceRegistry);
 
     when(serviceRegistry.getMicroserviceInstance()).thenReturn(myself);
-    when(serviceRegistry.getInstanceCacheManager()).thenReturn(instanceCacheManager);
+    mockUpInstanceCacheManager(instanceCacheManager);
     when(instanceCacheManager.getOrCreateVersionedCache("testApp", "testMicroserviceName", "0.0.0+"))
         .thenReturn(parent);
     when(transportManager.findTransport("rest")).thenReturn(transport);
@@ -976,5 +976,14 @@ public class TestLoadBalanceHandler2 {
 
   private void mockDelayMillis(long delay) {
     mockTimeMillis.value += delay;
+  }
+
+  private void mockUpInstanceCacheManager(InstanceCacheManager instanceCacheManager) {
+    new MockUp<RegistryUtils>() {
+      @Mock
+      InstanceCacheManager getInstanceCacheManager() {
+        return instanceCacheManager;
+      }
+    };
   }
 }
