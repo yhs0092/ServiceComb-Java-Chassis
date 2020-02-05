@@ -25,7 +25,6 @@ import org.apache.servicecomb.serviceregistry.api.registry.MicroserviceInstance;
 import org.apache.servicecomb.serviceregistry.cache.InstanceCacheManager;
 import org.apache.servicecomb.serviceregistry.client.ServiceRegistryClient;
 import org.apache.servicecomb.serviceregistry.client.http.MicroserviceInstances;
-import org.apache.servicecomb.serviceregistry.consumer.AppManager;
 
 import com.google.common.eventbus.EventBus;
 
@@ -47,8 +46,6 @@ public interface ServiceRegistry {
   MicroserviceInstance getMicroserviceInstance();
 
   ServiceRegistryClient getServiceRegistryClient();
-
-  AppManager getAppManager();
 
   InstanceCacheManager getInstanceCacheManager();
 

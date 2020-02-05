@@ -35,6 +35,7 @@ import org.apache.servicecomb.serviceregistry.cache.InstanceCacheManager;
 import org.apache.servicecomb.serviceregistry.client.ServiceRegistryClient;
 import org.apache.servicecomb.serviceregistry.client.http.MicroserviceInstances;
 import org.apache.servicecomb.serviceregistry.config.ServiceRegistryConfig;
+import org.apache.servicecomb.serviceregistry.consumer.AppManager;
 import org.apache.servicecomb.serviceregistry.definition.MicroserviceDefinition;
 import org.apache.servicecomb.serviceregistry.registry.ServiceRegistryFactory;
 import org.apache.servicecomb.serviceregistry.swagger.SwaggerLoader;
@@ -55,7 +56,9 @@ public final class RegistryUtils {
 
   private static final String PUBLISH_PORT = "servicecomb.{transport_name}.publishPort";
 
-  private static final SwaggerLoader swaggerLoader = new SwaggerLoader();
+  private static SwaggerLoader swaggerLoader = new SwaggerLoader();
+
+  private static AppManager appManager = new AppManager();
 
   private RegistryUtils() {
   }
@@ -107,6 +110,10 @@ public final class RegistryUtils {
 
   public static SwaggerLoader getSwaggerLoader() {
     return swaggerLoader;
+  }
+
+  public static AppManager getAppManager() {
+    return appManager;
   }
 
   public static String getAppId() {

@@ -28,6 +28,7 @@ import org.apache.servicecomb.serviceregistry.api.registry.Microservice;
 import org.apache.servicecomb.serviceregistry.api.registry.MicroserviceInstance;
 import org.apache.servicecomb.serviceregistry.api.response.FindInstancesResponse;
 import org.apache.servicecomb.serviceregistry.client.http.MicroserviceInstances;
+import org.apache.servicecomb.serviceregistry.consumer.AppManager;
 import org.apache.servicecomb.serviceregistry.consumer.MicroserviceVersionRule;
 import org.apache.servicecomb.serviceregistry.consumer.MicroserviceVersions;
 import org.apache.servicecomb.serviceregistry.definition.DefinitionConst;
@@ -39,6 +40,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import io.vertx.core.json.Json;
+import mockit.Deencapsulation;
 import mockit.Mock;
 import mockit.MockUp;
 
@@ -55,10 +57,12 @@ public class TestInstanceCacheChecker {
 
   @Before
   public void setUp() throws Exception {
+    Deencapsulation.setField(RegistryUtils.class, "appManager", new AppManager());
+
     serviceRegistry.init();
     RegistryUtils.setServiceRegistry(serviceRegistry);
 
-    checker = new InstanceCacheChecker(serviceRegistry.getAppManager());
+    checker = new InstanceCacheChecker(RegistryUtils.getAppManager());
     checker.clock = new MockClock(new Holder<>(1L));
     expectedSummary.setStatus(Status.NORMAL);
     expectedSummary.setTimestamp(1);
@@ -79,7 +83,7 @@ public class TestInstanceCacheChecker {
   @Test
   public void check_microserviceManager_empty() {
     appId = "notExist";
-    serviceRegistry.getAppManager().getOrCreateMicroserviceVersions(appId, microserviceName);
+    RegistryUtils.getAppManager().getOrCreateMicroserviceVersions(appId, microserviceName);
     InstanceCacheSummary instanceCacheSummary = checker.check();
     Assert.assertEquals(Json.encode(expectedSummary), Json.encode(instanceCacheSummary));
   }
@@ -120,7 +124,7 @@ public class TestInstanceCacheChecker {
 
     registerMicroservice(appId, microserviceName);
 
-    serviceRegistry.getAppManager()
+    RegistryUtils.getAppManager()
         .getOrCreateMicroserviceVersionRule(appId, microserviceName, DefinitionConst.VERSION_RULE_ALL);
 
     findHolder.value = null;
@@ -152,7 +156,7 @@ public class TestInstanceCacheChecker {
 
     registerMicroservice(appId, microserviceName);
 
-    serviceRegistry.getAppManager()
+    RegistryUtils.getAppManager()
         .getOrCreateMicroserviceVersionRule(appId, microserviceName, DefinitionConst.VERSION_RULE_ALL);
 
     findHolder.value.setMicroserviceNotExist(true);
@@ -184,7 +188,7 @@ public class TestInstanceCacheChecker {
 
     registerMicroservice(appId, microserviceName);
 
-    serviceRegistry.getAppManager()
+    RegistryUtils.getAppManager()
         .getOrCreateMicroserviceVersionRule(appId, microserviceName, DefinitionConst.VERSION_RULE_ALL);
 
     findHolder.value.setRevision("second");
@@ -217,7 +221,7 @@ public class TestInstanceCacheChecker {
 
     registerMicroservice(appId, microserviceName);
 
-    MicroserviceVersions microserviceVersions = serviceRegistry.getAppManager()
+    MicroserviceVersions microserviceVersions = RegistryUtils.getAppManager()
         .getOrCreateMicroserviceVersions(appId, microserviceName);
     microserviceVersions.setRevision("first");
     microserviceVersions.getOrCreateMicroserviceVersionRule(DefinitionConst.VERSION_RULE_ALL);
@@ -249,7 +253,7 @@ public class TestInstanceCacheChecker {
         Arrays.asList("rest://localhost:8080"),
         ThirdPartyServiceForUT.class);
 
-    MicroserviceVersionRule microserviceVersionRule = serviceRegistry.getAppManager()
+    MicroserviceVersionRule microserviceVersionRule = RegistryUtils.getAppManager()
         .getOrCreateMicroserviceVersionRule(appId, microserviceName, DefinitionConst.VERSION_RULE_ALL);
     Assert.assertEquals(microserviceName, microserviceVersionRule.getLatestMicroserviceVersion().getMicroserviceName());
 

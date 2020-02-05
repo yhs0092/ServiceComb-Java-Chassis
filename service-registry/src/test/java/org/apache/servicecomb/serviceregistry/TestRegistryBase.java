@@ -29,6 +29,7 @@ import org.junit.Before;
 
 import com.google.common.eventbus.EventBus;
 
+import mockit.Deencapsulation;
 import mockit.Expectations;
 
 public class TestRegistryBase {
@@ -66,7 +67,8 @@ public class TestRegistryBase {
     serviceRegistry = ServiceRegistryFactory.createLocal("registry.yaml");
     serviceRegistry.init();
 
-    appManager = serviceRegistry.getAppManager();
+    Deencapsulation.setField(RegistryUtils.class, "appManager", new AppManager());
+    appManager = RegistryUtils.getAppManager();
     microserviceManager = appManager.getOrCreateMicroserviceManager(appId);
     eventBus = serviceRegistry.getEventBus();
 
