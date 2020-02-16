@@ -55,6 +55,8 @@ import org.apache.servicecomb.foundation.common.utils.SPIServiceUtils;
 import org.apache.servicecomb.foundation.vertx.VertxUtils;
 import org.apache.servicecomb.serviceregistry.RegistryUtils;
 import org.apache.servicecomb.serviceregistry.ServiceRegistry;
+import org.apache.servicecomb.serviceregistry.api.registry.MicroserviceInstance;
+import org.apache.servicecomb.serviceregistry.api.registry.MicroserviceInstanceStatus;
 import org.apache.servicecomb.serviceregistry.consumer.MicroserviceVersions;
 import org.apache.servicecomb.serviceregistry.definition.MicroserviceNameParser;
 import org.apache.servicecomb.serviceregistry.swagger.SwaggerLoader;
@@ -77,6 +79,10 @@ public class SCBEngine {
   static final String CFG_KEY_WAIT_UP_TIMEOUT = "servicecomb.boot.waitUp.timeoutInMilliseconds";
 
   static final long DEFAULT_WAIT_UP_TIMEOUT = 10_000;
+
+  static final String CFG_KEY_TURN_DOWN_STATUS_WAIT_SEC = "servicecomb.boot.turnDown.waitInSeconds";
+
+  static final long DEFAULT_TURN_DOWN_STATUS_WAIT_SEC = 0;
 
   private static final Object initializationLock = new Object();
 
@@ -390,6 +396,15 @@ public class SCBEngine {
     //Step 1: notify all component stop invoke via BEFORE_CLOSE Event
     safeTriggerEvent(EventType.BEFORE_CLOSE);
 
+    RegistryUtils.executeOnEachServiceRegistry(sr -> {
+      MicroserviceInstance selfInstance = sr.getMicroserviceInstance();
+      sr.getServiceRegistryClient().updateMicroserviceInstanceStatus(
+          selfInstance.getServiceId(),
+          selfInstance.getInstanceId(),
+          MicroserviceInstanceStatus.DOWN);
+    });
+    blockShutDownOperationForConsumerRefresh();
+
     //Step 2: forbid create new consumer invocation
     status = SCBStatus.STOPPING;
 
@@ -416,6 +431,20 @@ public class SCBEngine {
 
     //Step 7: notify all component do clean works via AFTER_CLOSE Event
     safeTriggerEvent(EventType.AFTER_CLOSE);
+  }
+
+  private void blockShutDownOperationForConsumerRefresh() {
+    try {
+      long turnDownWaitSeconds = DynamicPropertyFactory.getInstance()
+          .getLongProperty(CFG_KEY_TURN_DOWN_STATUS_WAIT_SEC, DEFAULT_TURN_DOWN_STATUS_WAIT_SEC)
+          .get();
+      if (turnDownWaitSeconds <= 0) {
+        return;
+      }
+      Thread.sleep(TimeUnit.SECONDS.toMillis(turnDownWaitSeconds));
+    } catch (InterruptedException e) {
+      LOGGER.warn("failed to block the shutdown procedure", e);
+    }
   }
 
   private void validAllInvocationFinished() throws InterruptedException {
