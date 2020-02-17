@@ -48,6 +48,7 @@ import org.apache.servicecomb.core.provider.consumer.MicroserviceReferenceConfig
 import org.apache.servicecomb.core.provider.producer.ProducerProviderManager;
 import org.apache.servicecomb.core.transport.TransportManager;
 import org.apache.servicecomb.foundation.common.VendorExtensions;
+import org.apache.servicecomb.foundation.common.concurrency.SuppressedRunnableWrapper;
 import org.apache.servicecomb.foundation.common.event.EnableExceptionPropagation;
 import org.apache.servicecomb.foundation.common.event.EventManager;
 import org.apache.servicecomb.foundation.common.log.LogMarkerLeakFixUtils;
@@ -397,11 +398,13 @@ public class SCBEngine {
     safeTriggerEvent(EventType.BEFORE_CLOSE);
 
     RegistryUtils.executeOnEachServiceRegistry(sr -> {
-      MicroserviceInstance selfInstance = sr.getMicroserviceInstance();
-      sr.getServiceRegistryClient().updateMicroserviceInstanceStatus(
-          selfInstance.getServiceId(),
-          selfInstance.getInstanceId(),
-          MicroserviceInstanceStatus.DOWN);
+      new SuppressedRunnableWrapper(() -> {
+        MicroserviceInstance selfInstance = sr.getMicroserviceInstance();
+        sr.getServiceRegistryClient().updateMicroserviceInstanceStatus(
+            selfInstance.getServiceId(),
+            selfInstance.getInstanceId(),
+            MicroserviceInstanceStatus.DOWN);
+      }).run();
     });
     blockShutDownOperationForConsumerRefresh();
 
