@@ -162,8 +162,8 @@ public final class TokenCacheManager {
       if ((serviceRegistry == null || serviceRegistryClient == null)
           && ServiceRegistry.DEFAULT_REGISTRY_NAME.equals(registryName)) {
         LOGGER.error("failed to get default serviceRegistry");
-        tokenCacheWorker.scheduleWithFixedDelay( // retry after 1 second
-            this::refreshToken, 0, 1, TimeUnit.SECONDS);
+        tokenCacheWorker.schedule( // retry after 1 second
+            this::refreshToken, 1, TimeUnit.SECONDS);
         return;
       }
       RbacTokenRequest request = new RbacTokenRequest();
