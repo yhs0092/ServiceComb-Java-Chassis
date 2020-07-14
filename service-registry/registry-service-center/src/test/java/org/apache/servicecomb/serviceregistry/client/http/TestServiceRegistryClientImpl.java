@@ -627,7 +627,7 @@ public class TestServiceRegistryClientImpl {
     request.setPassword("test_password");
     RbacTokenResponse response = oClient.getRbacToken(request);
 
-    Assert.assertTrue(response.isOk());
+    Assert.assertEquals(200, response.getStatusCode());
     Assert.assertEquals("test_token_content", response.getToken());
   }
 
@@ -640,14 +640,19 @@ public class TestServiceRegistryClientImpl {
         throw e;
       }
     };
-    mockForGetRbacToken(200, "{\"token\":\"test_token_content\"}");
+    new MockUp<RestClientUtil>() {
+      @Mock
+      void post(IpPort ipPort, String uri, RequestParam requestParam,
+          Handler<RestResponse> responseHandler) {
+      }
+    };
     RbacTokenRequest request = new RbacTokenRequest();
     request.setAccountName("test_account_name");
     request.setPassword("test_password");
 
     RbacTokenResponse response = oClient.getRbacToken(request);
 
-    Assert.assertFalse(response.isOk());
+    Assert.assertEquals(0, response.getStatusCode());
     Assert.assertNull(response.getToken());
   }
 
@@ -665,7 +670,7 @@ public class TestServiceRegistryClientImpl {
 
     RbacTokenResponse response = oClient.getRbacToken(request);
 
-    Assert.assertFalse(response.isOk());
+    Assert.assertEquals(0, response.getStatusCode());
     Assert.assertNull(response.getToken());
   }
 
@@ -679,7 +684,7 @@ public class TestServiceRegistryClientImpl {
     request.setPassword("test_password");
     RbacTokenResponse response = oClient.getRbacToken(request);
 
-    Assert.assertFalse(response.isOk());
+    Assert.assertEquals(401, response.getStatusCode());
     Assert.assertNull(response.getToken());
   }
 

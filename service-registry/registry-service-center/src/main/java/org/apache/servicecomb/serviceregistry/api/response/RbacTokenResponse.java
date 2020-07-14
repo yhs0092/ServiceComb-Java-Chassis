@@ -18,16 +18,16 @@
 package org.apache.servicecomb.serviceregistry.api.response;
 
 public class RbacTokenResponse {
-  private transient boolean ok;
+  private transient int statusCode;
 
   private String token;
 
-  public boolean isOk() {
-    return ok;
+  public int getStatusCode() {
+    return statusCode;
   }
 
-  public void setOk(boolean ok) {
-    this.ok = ok;
+  public void setStatusCode(int statusCode) {
+    this.statusCode = statusCode;
   }
 
   public String getToken() {
@@ -41,7 +41,7 @@ public class RbacTokenResponse {
   @Override
   public String toString() {
     final StringBuilder sb = new StringBuilder("RbacTokenResponse{");
-    sb.append("ok=").append(ok);
+    sb.append("statusCode=").append(statusCode);
     sb.append(", token='").append(token).append('\'');
     sb.append('}');
     return sb.toString();

@@ -979,15 +979,17 @@ public final class ServiceRegistryClientImpl implements ServiceRegistryClient {
         syncHandler(countDownLatch, RbacTokenResponse.class, holder));
     try {
       countDownLatch.await();
-      if (holder.value != null
-          && Status.OK.getStatusCode() == holder.getStatusCode()) {
-        holder.value.setOk(true);
-        return holder.value;
-      }
     } catch (InterruptedException e) {
       LOGGER.error("failed to wait for rbac token response", e);
     }
 
-    return new RbacTokenResponse();
+    if (holder.value != null) {
+      holder.value.setStatusCode(holder.getStatusCode());
+      return holder.value;
+    }
+
+    RbacTokenResponse response = new RbacTokenResponse();
+    response.setStatusCode(holder.getStatusCode());
+    return response;
   }
 }
