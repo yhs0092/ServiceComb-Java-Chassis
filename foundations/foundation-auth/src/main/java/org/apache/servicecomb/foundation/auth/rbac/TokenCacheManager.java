@@ -71,14 +71,14 @@ public final class TokenCacheManager {
     tokenCacheMap = new ConcurrentHashMapEx<>();
   }
 
-  public void addTokenCache(String registryName, String accountName, String password) {
+  public void addTokenCache(String registryName, String accountName, String password, Cipher cipher) {
     Objects.requireNonNull(registryName, "registryName should not be null!");
     if (tokenCacheMap.containsKey(registryName)) {
       throw new IllegalArgumentException(
           "duplicate token cache registration for serviceRegistry[" + registryName + "]");
     }
 
-    TokenCache tokenCache = new TokenCache(registryName, accountName, password, this.clock);
+    TokenCache tokenCache = new TokenCache(registryName, accountName, password, cipher, this.clock);
     tokenCache.setTokenCacheWorker(this.tokenCacheWorker);
     tokenCacheMap.put(registryName, tokenCache);
   }
@@ -115,10 +115,14 @@ public final class TokenCacheManager {
 
     private ScheduledExecutorService tokenCacheWorker;
 
-    public TokenCache(String registryName, String accountName, String password, Clock clock) {
+    private Cipher cipher;
+
+    public TokenCache(String registryName, String accountName, String password,
+        Cipher cipher, Clock clock) {
       this.registryName = registryName;
       this.accountName = accountName;
       this.password = password;
+      this.cipher = cipher;
       this.clock = clock;
     }
 
@@ -167,8 +171,8 @@ public final class TokenCacheManager {
         return;
       }
       RbacTokenRequest request = new RbacTokenRequest();
-      request.setAccountName(accountName);
-      request.setPassword(password);
+      request.setAccountName(new String(cipher.decrypt(accountName.toCharArray())));
+      request.setPassword(new String(cipher.decrypt(password.toCharArray())));
       RbacTokenResponse rbacTokenResponse = serviceRegistryClient.getRbacToken(request);
       LOGGER.info("refresh token successfully {}", rbacTokenResponse.getStatusCode());
       if (StringUtils.isEmpty(this.token) && Status.UNAUTHORIZED.getStatusCode() == rbacTokenResponse.getStatusCode()) {
