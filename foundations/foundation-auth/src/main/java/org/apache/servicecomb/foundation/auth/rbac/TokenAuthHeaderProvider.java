@@ -25,7 +25,15 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.servicecomb.foundation.auth.AuthHeaderProvider;
 import org.apache.servicecomb.serviceregistry.ServiceRegistry;
 
+import com.netflix.config.DynamicPropertyFactory;
+
 public class TokenAuthHeaderProvider implements AuthHeaderProvider {
+  public static final String ACCOUNT_NAME_KEY = "servicecomb.credentials.accountName";
+
+  public static final String PASSWORD_KEY = "servicecomb.credentials.password";
+
+  public static final String CIPHER_KEY = "servicecomb.credentials.cipher";
+
   private String registryName;
 
   private String accountName;
@@ -34,9 +42,11 @@ public class TokenAuthHeaderProvider implements AuthHeaderProvider {
 
   public TokenAuthHeaderProvider() {
     this.registryName = ServiceRegistry.DEFAULT_REGISTRY_NAME;
-    this.accountName = "root";
-    this.password = "123456";
-    TokenCacheManager.getInstance().addTokenCache(registryName, accountName, password);
+    this.accountName = DynamicPropertyFactory.getInstance().getStringProperty(ACCOUNT_NAME_KEY, null).get();
+    this.password = DynamicPropertyFactory.getInstance().getStringProperty(PASSWORD_KEY, null).get();
+    if (StringUtils.isNotEmpty(this.accountName)) {
+      TokenCacheManager.getInstance().addTokenCache(registryName, accountName, password);
+    }
   }
 
   public TokenAuthHeaderProvider(String registryName, String accountName, String password) {

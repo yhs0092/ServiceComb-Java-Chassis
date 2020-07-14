@@ -28,7 +28,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.Nonnull;
+import javax.ws.rs.core.Response.Status;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.servicecomb.foundation.common.concurrency.SuppressedRunnableWrapper;
 import org.apache.servicecomb.foundation.common.concurrent.ConcurrentHashMapEx;
 import org.apache.servicecomb.foundation.common.utils.TimeUtils;
@@ -100,6 +102,8 @@ public final class TokenCacheManager {
 
     private long nextRefreshTime;
 
+    private boolean wrongPassword;
+
     /**
      * The life cycle period of a token, in millisecond.
      * After the {@code tokenLife} time since the token created, it should be refreshed.
@@ -149,6 +153,9 @@ public final class TokenCacheManager {
     }
 
     private void refreshToken() {
+      if (wrongPassword) {
+        return;
+      }
       ServiceRegistry serviceRegistry = RegistryUtils.getServiceRegistry(registryName);
       ServiceRegistryClient serviceRegistryClient =
           serviceRegistry == null ? null : serviceRegistry.getServiceRegistryClient();
@@ -164,6 +171,10 @@ public final class TokenCacheManager {
       request.setPassword(password);
       RbacTokenResponse rbacTokenResponse = serviceRegistryClient.getRbacToken(request);
       LOGGER.info("refresh token successfully {}", rbacTokenResponse.getStatusCode());
+      if (StringUtils.isEmpty(this.token) && Status.UNAUTHORIZED.getStatusCode() == rbacTokenResponse.getStatusCode()) {
+        // password wrong, do not try anymore
+        wrongPassword = true;
+      }
       this.token = rbacTokenResponse.getToken();
       this.nextRefreshTime = clock.millis() + tokenLife;
     }
