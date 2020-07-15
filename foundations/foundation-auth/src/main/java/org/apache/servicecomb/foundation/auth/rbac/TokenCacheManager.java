@@ -74,8 +74,8 @@ public final class TokenCacheManager {
   public void addTokenCache(String registryName, String accountName, String password, Cipher cipher) {
     Objects.requireNonNull(registryName, "registryName should not be null!");
     if (tokenCacheMap.containsKey(registryName)) {
-      throw new IllegalArgumentException(
-          "duplicate token cache registration for serviceRegistry[" + registryName + "]");
+      LOGGER.warn("duplicate token cache registration for serviceRegistry[{}]", registryName);
+      return;
     }
 
     TokenCache tokenCache = new TokenCache(registryName, accountName, password, cipher, this.clock);
