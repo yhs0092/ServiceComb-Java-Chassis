@@ -29,7 +29,7 @@ import org.apache.servicecomb.serviceregistry.ServiceRegistry;
 import com.netflix.config.DynamicPropertyFactory;
 
 public class TokenAuthHeaderProvider implements AuthHeaderProvider {
-  public static final String ACCOUNT_NAME_KEY = "servicecomb.credentials.accountName";
+  public static final String ACCOUNT_NAME_KEY = "servicecomb.credentials.account-name";
 
   public static final String PASSWORD_KEY = "servicecomb.credentials.password";
 
